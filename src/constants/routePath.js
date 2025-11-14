@@ -10,7 +10,6 @@ const ROUTE_PATH = {
   DASHBOARD: '/admin/dashboard',
   ADMIN_CREATE_SUPPORTER: '/admin/supporters/create',
   ADMIN_CREATE_DOCTOR: '/admin/doctors/create',
-  ADMIN_BULK_IMPORT: '/admin/bulk-import',
   ADMIN_VIEW_DETAIL: '/admin/supporters/view',
   ADMIN_VIEW_USER: '/admin/users',
   ADMIN_VIEW_DOCTOR_DETAIL: '/admin/doctors/view',
