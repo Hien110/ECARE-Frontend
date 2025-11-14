@@ -12,7 +12,6 @@ const RegisteredPackagesPage = React.lazy(() => import("../pages/Admin/Registere
 const AdminDashboardPage = React.lazy(() => import("../pages/Admin/DashboardPage"));
 const AdminCreateSupporterPage = React.lazy(() => import("../pages/Admin/AdminCreateSupporterPage"));
 const AdminCreateDoctorPage = React.lazy(() => import("../pages/Admin/AdminCreateDoctorPage"));
-const AdminBulkImportPage = React.lazy(() => import("../pages/Admin/AdminBulkImportPage"));
 const AdminViewSupporterPage = React.lazy(() => import("../pages/Admin/AdminViewSupporterPage"));
 const AdminUserListPage = React.lazy(() => import("../pages/Admin/AdminUserListPage"));
 const AdminDoctorDetailPage = React.lazy(() => import("../pages/Admin/AdminDoctorDetailPage"));
@@ -38,7 +37,6 @@ const AppRoutes = [
     { path: ROUTE_PATH.DASHBOARD, page: AdminDashboardPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_CREATE_SUPPORTER, page: AdminCreateSupporterPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_CREATE_DOCTOR, page: AdminCreateDoctorPage, layout: AdminLayout },
-    { path: ROUTE_PATH.ADMIN_BULK_IMPORT, page: AdminBulkImportPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_DETAIL, page: AdminViewSupporterPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_USER, page: AdminUserListPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_DOCTOR_DETAIL, page: AdminDoctorDetailPage, layout: AdminLayout },
