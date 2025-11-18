@@ -20,6 +20,10 @@ const AdminFamilyDetailPage = React.lazy(() => import("../pages/Admin/AdminFamil
 const BulkImportDoctorPage = React.lazy(() => import("../pages/Admin/BulkImportDoctorPage"));
 const BulkImportSupporterPage = React.lazy(() => import("../pages/Admin/BulkImportSupporterPage"));
 const RegisteredPackageDetailPage = React.lazy(() => import("../pages/Admin/RegisteredPackageDetailPage"));
+const AdminCreatePackagePage = React.lazy(() => import("../pages/Admin/AdminCreateHealthPackagePage"));
+const AdminListPackagePage = React.lazy(() => import("../pages/Admin/AdminListHealthPackagePage"));
+const AdminEditPackagePage = React.lazy(() => import("../pages/Admin/AdminEditHealthPackagePage"));
+const AdminPackageDetailPage = React.lazy(() => import("../pages/Admin/AdminHealthPackageDetailPage"));
 
 // Supporter Services routes
 // (Add supporter services related pages here when available)
@@ -46,6 +50,10 @@ const AppRoutes = [
     { path: ROUTE_PATH.ADMIN_DETAIL_REGISTERED_PACKAGE, page: RegisteredPackageDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_BULK_IMPORT_DOCTORS, page: BulkImportDoctorPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_BULK_IMPORT_SUPPORTERS, page: BulkImportSupporterPage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_CREATE_HEALTH_PACKAGE, page: AdminCreatePackagePage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_LIST_HEALTH_PACKAGES, page: AdminListPackagePage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_EDIT_HEALTH_PACKAGE, page: AdminEditPackagePage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_HEALTH_PACKAGE_DETAIL, page: AdminPackageDetailPage, layout: AdminLayout },
 
     // Supporter Services routes
     { path: ROUTE_PATH.SUPPORTER_SERVICES, page: AdminListSupporterServices, layout: AdminLayout },
