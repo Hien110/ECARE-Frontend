@@ -19,6 +19,10 @@ const ROUTE_PATH = {
   ADMIN_BULK_IMPORT_DOCTORS: '/admin/doctors/import',
   ADMIN_BULK_IMPORT_SUPPORTERS: '/admin/supporters/import',
   ADMIN_DETAIL_REGISTERED_PACKAGE:'/admin/registered-packages/:id',
+  ADMIN_CREATE_HEALTH_PACKAGE: '/admin/health-packages/create',
+  ADMIN_LIST_HEALTH_PACKAGES: '/admin/health-packages',
+  ADMIN_EDIT_HEALTH_PACKAGE: '/admin/health-packages/edit/:id',
+  ADMIN_HEALTH_PACKAGE_DETAIL: '/admin/health-packages/:id',
 
   //Supporter Services
   SUPPORTER_SERVICES: '/supporter-services',
