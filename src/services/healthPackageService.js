@@ -1,5 +1,7 @@
 import axios from "axios";
-const PACKAGE_API_URL = "http://localhost:3000/api/health-packages";
+import API_BASE_URL from "../config/api";
+
+const PACKAGE_API_URL = `${API_BASE_URL}/api/health-packages`;
 // Lấy danh sách tất cả gói khám
 
 export const getHealthPackages = async () => {

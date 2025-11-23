@@ -7,7 +7,10 @@ export const getRegisteredPackageById = async (id) => {
 };
 import axios from "axios";
 
-const ADMIN_API_BASE = "http://localhost:3000/api/admin";
+import API_BASE_URL from "../config/api";
+
+
+const ADMIN_API_BASE = `${API_BASE_URL}/api/admin`;
 
 const getAuthHeader = () => {
   const token = sessionStorage.getItem("ecare_token") || 
