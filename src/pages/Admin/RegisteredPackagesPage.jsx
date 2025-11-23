@@ -78,17 +78,14 @@ const RegisteredPackagesPage = () => {
 
                 <tbody className="divide-y divide-slate-200">
                   {items.map((pkg, idx) => (
-                    <tr key={pkg._id} className="hover:bg-slate-50 transition-colors duration-200">
+                    <tr
+                      key={pkg._id}
+                      className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
+                      onClick={() => navigate(`/admin/registered-packages/${pkg._id}`)}
+                      title="Xem chi tiết gói khám"
+                    >
                       <td className="px-6 py-4 text-sm text-slate-700 font-medium">{(page - 1) * limit + idx + 1}</td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => navigate(`/admin/registered-packages/${pkg._id}`)}
-                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
-                          title="Xem chi tiết gói khám"
-                        >
-                          {pkg.packageRef?.title || "N/A"}
-                        </button>
-                      </td>
+                      <td className="px-6 py-4">{pkg.packageRef?.title || "N/A"}</td>
                       <td className="px-6 py-4 text-sm text-slate-700">
                         <div className="font-medium">{pkg.registrant?.fullName || "N/A"}</div>
                         <div className="text-xs text-slate-500">{pkg.registrant?.role}</div>
