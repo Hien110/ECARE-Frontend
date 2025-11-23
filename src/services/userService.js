@@ -1,7 +1,8 @@
 // services/userService.js
 import axios from 'axios';
-
-const API_URL = import.meta?.env?.VITE_API_URL?.replace(/\/+$/, '') || 'http://localhost:3000/api/users';
+import API_BASE_URL from "../config/api";
+  
+const API_URL = `${API_BASE_URL}/api/users`;
 
 // Tạo 1 axios instance dùng chung
 const api = axios.create({
