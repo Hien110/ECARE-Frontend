@@ -40,7 +40,10 @@ function Header() {
 
           {/* Right: Notifications + Profile */}
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition" aria-label="Notifications">
+            <button
+              className="relative p-2 rounded-full hover:bg-gray-100 transition"
+              aria-label="Notifications"
+            >
               <Bell size={18} className="text-gray-700" />
               <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 text-white text-[10px] px-1">
                 3
@@ -136,7 +139,7 @@ function Header() {
             aria-expanded={isPackagesOpen}
             type="button"
           >
-            <MessagesSquare size={16} /> Quản Lý Gói Khám
+            <MessagesSquare size={16} /> Dịch vụ hỗ trợ sức khỏe
             <ChevronDown size={14} className="ml-1" />
           </button>
 
@@ -144,16 +147,16 @@ function Header() {
           {isPackagesOpen && (
             <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
               <Link
-                to="/admin/registered-packages"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
-              >
-                Gói khám đã đăng ký
-              </Link>
-              <Link
                 to="/admin/health-packages"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
               >
-                Gói khám chưa đăng ký
+                Quản lý dịch vụ
+              </Link>
+              <Link
+                to="/admin/registered-packages"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Dịch vụ đã được đăng ký
               </Link>
             </div>
           )}

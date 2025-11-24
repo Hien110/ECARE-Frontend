@@ -61,7 +61,7 @@ export default function AdminListHealthPackagePage() {
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">Danh Sách Gói Khám</h1>
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">Quản Lý Dịch Vụ</h1>
             <p className="text-slate-600">Quản lý các gói dịch vụ khám sức khỏe của bạn</p>
           </div>
           <a
