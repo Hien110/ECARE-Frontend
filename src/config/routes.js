@@ -30,7 +30,8 @@ const AdminPackageDetailPage = React.lazy(() => import("../pages/Admin/AdminHeal
 const AdminListSupporterServices = React.lazy(() => import("../pages/Admin/AdminListSupporterServices"));
 const AdminSupporterServiceDetail = React.lazy(() => import("../pages/Admin/AdminCreateSupporterServices"));
 
-
+const AdminSupporterSchedulingListPage = React.lazy(() => import("../pages/Admin/SupporterSchedulingList"));
+const AdminSupporterSchedulingDetailPage = React.lazy(() => import("../pages/Admin/SupporterSchedulingDetailPage"));
 const AppRoutes = [
 
     // Auth routes
@@ -58,6 +59,9 @@ const AppRoutes = [
     // Supporter Services routes
     { path: ROUTE_PATH.SUPPORTER_SERVICES, page: AdminListSupporterServices, layout: AdminLayout },
     { path: ROUTE_PATH.SUPPORTER_SERVICE_DETAIL, page: AdminSupporterServiceDetail, layout: AdminLayout },
-]
+
+    { path: ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_LIST, page: AdminSupporterSchedulingListPage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL, page: AdminSupporterSchedulingDetailPage, layout: AdminLayout },
+];
 
 export default AppRoutes;
