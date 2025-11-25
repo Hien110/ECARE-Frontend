@@ -16,6 +16,7 @@ import ROUTE_PATH from "../constants/routePath";
 function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPackagesOpen, setIsPackagesOpen] = useState(false); // NEW
+  const [isSupporterServicesOpen, setIsSupporterServicesOpen] = useState(false); // NEW
   const { pathname } = useLocation();
 
   return (
@@ -162,16 +163,45 @@ function Header() {
           )}
         </div>
 
-        <Link
-          to="/admin/services"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith("/admin/services")
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
+        {/* Supporter Services dropdown: Similar to health packages dropdown */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsSupporterServicesOpen(true)}
+          onMouseLeave={() => setIsSupporterServicesOpen(false)}
         >
-          <MessageCircle size={16} /> Dịch Vụ
-        </Link>
+          <button
+            onClick={() => setIsSupporterServicesOpen((v) => !v)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
+              pathname.startsWith(ROUTE_PATH.SUPPORTER_SERVICES)
+                ? "bg-blue-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            aria-haspopup="true"
+            aria-expanded={isSupporterServicesOpen}
+            type="button"
+          >
+            Dịch vụ hỗ trợ
+            <ChevronDown size={14} className="ml-1" />
+          </button>
+
+          {isSupporterServicesOpen && (
+            <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+              <Link
+                to={ROUTE_PATH.SUPPORTER_SERVICES}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý dịch vụ
+              </Link>
+              <Link
+                to={ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_LIST}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Dịch vụ đã đặt
+              </Link>
+            </div>
+          )}
+        </div>
+
 
         <Link
           to="/admin/appointments"
@@ -193,17 +223,6 @@ function Header() {
           }`}
         >
           <BarChart3 size={16} /> Báo Cáo
-        </Link>
-
-        <Link
-          to={ROUTE_PATH.SUPPORTER_SERVICES}
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith(ROUTE_PATH.SUPPORTER_SERVICES)
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          Dịch vụ hỗ trợ
         </Link>
       </nav>
     </header>
