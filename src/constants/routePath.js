@@ -23,8 +23,13 @@ const ROUTE_PATH = {
   ADMIN_LIST_HEALTH_PACKAGES: '/admin/health-packages',
   ADMIN_EDIT_HEALTH_PACKAGE: '/admin/health-packages/edit/:id',
   ADMIN_HEALTH_PACKAGE_DETAIL: '/admin/health-packages/:id',
+
   ADMIN_VIEW_USER: '/admin/user',
   ADMIN_VIEW_STAFF: 'admin/staff',
+
+  ADMIN_SUPPORTER_SCHEDULING_LIST: '/admin/supporter-schedulings',
+  ADMIN_SUPPORTER_SCHEDULING_DETAIL: '/admin/supporter-schedulings/:id',
+
 
   //Supporter Services
   SUPPORTER_SERVICES: '/supporter-services',
