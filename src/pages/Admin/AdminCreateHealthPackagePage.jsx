@@ -106,9 +106,30 @@ export default function AdminCreateHealthPackagePage() {
     setError("");
     setLoading(true);
 
+    // Xử lý dữ liệu gửi lên backend
+    const durationOptions = form.durations.filter(d => d.checked).map(d => Number(d.value));
+    // fees: mảng các mốc cố định và giá
+    const fees = form.durations
+      .filter(d => d.checked && d.price !== "")
+      .map(d => ({ days: Number(d.value), fee: Number(d.price) }));
+    let customDuration, customDurationPrice;
+    if (form.customDurations.length > 0) {
+      const firstCustom = form.customDurations[0];
+      customDuration = Number(firstCustom.value) || undefined;
+      customDurationPrice = Number(firstCustom.price) || undefined;
+    }
+    const payload = {
+      title: form.title,
+      durationOptions,
+      fees,
+      service: form.service,
+      description: form.description,
+      isActive: form.isActive,
+      customDuration,
+      customDurationPrice
+    };
     try {
-      await createHealthPackage(form);
-
+      await createHealthPackage(payload);
       navigate("/admin/health-packages");
     } catch (err) {
       setError(err?.message || "Lỗi khi tạo gói khám");
