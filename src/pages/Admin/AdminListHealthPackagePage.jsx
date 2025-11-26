@@ -119,9 +119,7 @@ export default function AdminListHealthPackagePage() {
                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wide">
                       Tên Gói
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                      Giá
-                    </th>
+                  
                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wide">
                       Thời Hạn
                     </th>
@@ -151,12 +149,6 @@ export default function AdminListHealthPackagePage() {
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="font-semibold text-slate-900">
-                          {pkg.price?.toLocaleString()} VND
-                        </span>
-                      </td>
-
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
                           {pkg.durationOptions?.map((duration) => (

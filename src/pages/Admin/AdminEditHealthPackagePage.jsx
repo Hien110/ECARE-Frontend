@@ -1,26 +1,56 @@
-import React, { useEffect, useState } from "react";
+
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  getHealthPackageDetail,
-  updateHealthPackage,
-} from "../../services/healthPackageService";
+import { getHealthPackageDetail, updateHealthPackage } from "../../services/healthPackageService";
+
+const DURATION_OPTIONS = [
+  { checked: false, value: 30, label: "1 Tháng (30 ngày)", price: "" },
+  { checked: false, value: 90, label: "3 Tháng (90 ngày)", price: "" },
+  { checked: false, value: 180, label: "6 Tháng (180 ngày)", price: "" },
+  { checked: false, value: 270, label: "9 Tháng (270 ngày)", price: "" },
+  { checked: false, value: 365, label: "1 Năm (365 ngày)", price: "" },
+];
 
 export default function AdminEditHealthPackagePage() {
   const { id } = useParams();
   const [form, setForm] = useState(null);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    setError("");
+    setLoading(true);
     getHealthPackageDetail(id)
-      .then((res) => setForm(res.data))
-      .catch((err) =>
-        setError(
-          err?.response?.data?.message || "Lỗi khi lấy chi tiết gói khám"
-        )
-      );
+      .then((res) => {
+        const pkg = res.data;
+        // Map durations
+        const durations = DURATION_OPTIONS.map((opt) => {
+          const checked = pkg.durationOptions?.includes(opt.value);
+          const feeObj = pkg.fees?.find((f) => f.days === opt.value);
+          return {
+            ...opt,
+            checked: !!checked,
+            price: feeObj ? String(feeObj.fee) : ""
+          };
+        });
+        // Map customDurations
+        const customDurations = pkg.customDuration && pkg.customDurationPrice
+          ? [{ value: String(pkg.customDuration), price: String(pkg.customDurationPrice) }]
+          : [];
+        setForm({
+          title: pkg.title || "",
+          durations,
+          customDurations,
+          service: pkg.service && pkg.service.length > 0 ? pkg.service : [{ serviceName: "", serviceDescription: "" }],
+          description: pkg.description || "",
+          isActive: !!pkg.isActive,
+        });
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message || "Lỗi khi lấy chi tiết gói khám");
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   const handleChange = (e) => {
@@ -28,6 +58,37 @@ export default function AdminEditHealthPackagePage() {
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleDurationChange = (idx, field, value) => {
+    setForm((prev) => {
+      const durations = [...prev.durations];
+      if (field === "checked") durations[idx][field] = value;
+      else durations[idx][field] = value.replace(/[^0-9]/g, "");
+      return { ...prev, durations };
+    });
+  };
+
+  const handleCustomDurationChange = (idx, field, value) => {
+    setForm((prev) => {
+      const customDurations = [...prev.customDurations];
+      customDurations[idx][field] = value.replace(/[^0-9]/g, "");
+      return { ...prev, customDurations };
+    });
+  };
+
+  const addCustomDuration = () => {
+    setForm((prev) => ({
+      ...prev,
+      customDurations: [...prev.customDurations, { value: "", price: "" }],
+    }));
+  };
+
+  const removeCustomDuration = (idx) => {
+    setForm((prev) => ({
+      ...prev,
+      customDurations: prev.customDurations.filter((_, i) => i !== idx),
     }));
   };
 
@@ -39,13 +100,6 @@ export default function AdminEditHealthPackagePage() {
     });
   };
 
-  const deleteService = (idx) => {
-    setForm((prev) => ({
-      ...prev,
-      service: prev.service.filter((_, i) => i !== idx),
-    }));
-  };
-
   const addService = () => {
     setForm((prev) => ({
       ...prev,
@@ -53,24 +107,56 @@ export default function AdminEditHealthPackagePage() {
     }));
   };
 
-  const handleDurationOptionsChange = (e) => {
-    const { options } = e.target;
-    const selected = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) selected.push(Number(options[i].value));
+  const removeService = (idx) => {
+    setForm((prev) => ({
+      ...prev,
+      service: prev.service.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const handlePriceKeyDown = (e) => {
+    const invalidKeys = ["e", "E", "+", "-", ".", ","];
+    if (invalidKeys.includes(e.key)) {
+      e.preventDefault();
     }
-    setForm((prev) => ({ ...prev, durationOptions: selected }));
+    const controlKeys = [
+      "Backspace", "Delete", "Tab", "Escape", "Enter",
+      "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"
+    ];
+    if (controlKeys.includes(e.key)) return;
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
     setLoading(true);
+    // Build payload
+    const durationOptions = form.durations.filter(d => d.checked).map(d => Number(d.value));
+    const fees = form.durations
+      .filter(d => d.checked && d.price !== "")
+      .map(d => ({ days: Number(d.value), fee: Number(d.price) }));
+    let customDuration, customDurationPrice;
+    if (form.customDurations.length > 0) {
+      const firstCustom = form.customDurations[0];
+      customDuration = Number(firstCustom.value) || undefined;
+      customDurationPrice = Number(firstCustom.price) || undefined;
+    }
+    const payload = {
+      title: form.title,
+      durationOptions,
+      fees,
+      service: form.service,
+      description: form.description,
+      isActive: form.isActive,
+      customDuration,
+      customDurationPrice
+    };
     try {
-      await updateHealthPackage(id, form);
-      setSuccess("Cập nhật gói khám thành công!");
-      setTimeout(() => navigate(`/admin/health-packages/${id}`), 1500);
+      await updateHealthPackage(id, payload);
+      navigate("/admin/health-packages");
     } catch (err) {
       setError(err?.response?.data?.message || "Lỗi khi cập nhật gói khám");
     } finally {
@@ -89,253 +175,234 @@ export default function AdminEditHealthPackagePage() {
     );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-card/30 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            {/* Nút quay lại – Vuông + nền xanh biển */}
-            <button
-              onClick={() => navigate("/admin/health-packages")}
-              className="px-4 py-2 bg-primary text-primary-foreground 
-                   rounded-md shadow-sm font-medium text-base
-                   hover:bg-primary/90 transition"
-            >
-              ← Quay lại
-            </button>
-
-            {/* Tiêu đề – sát trái, thẳng hàng với form */}
-            <div className="Name-title flex-1">
-              <h1 className="text-2xl font-bold text-foreground">
-                Chỉnh sửa gói khám
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                Cập nhật thông tin chi tiết của gói khám sức khỏe
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">
+            Chỉnh sửa Gói Khám
+          </h1>
+          <p className="text-slate-600">
+            Cập nhật thông tin chi tiết của gói dịch vụ khám sức khỏe
+          </p>
         </div>
-      </div>
 
-      {/* Alerts */}
-      {error && (
-        <div className="max-w-4xl mx-auto px-4 mt-4">
-          <div className="bg-destructive/10 border border-destructive text-destructive-foreground px-4 py-3 rounded">
-            {error}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+            <div className="text-red-600 font-semibold text-sm">⚠️ Lỗi</div>
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {success && (
-        <div className="max-w-4xl mx-auto px-4 mt-4">
-          <div className="bg-green-900/20 border border-green-700 text-green-400 px-4 py-3 rounded">
-            ✓ {success}
-          </div>
-        </div>
-      )}
-
-      {/* Main Form */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="border border-border rounded-lg p-6 bg-card">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Thông tin cơ bản
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Tên gói khám *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={form.title}
-                  onChange={handleChange}
-                  placeholder="VD: Gói khám tổng quát năm 2024"
-                  className="w-full px-3 py-2 bg-input border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Mô tả *
-                </label>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  placeholder="Mô tả chi tiết về gói khám..."
-                  rows={4}
-                  className="w-full px-3 py-2 bg-input border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+          <form onSubmit={handleSubmit} className="p-8">
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full text-sm font-bold">
+                  1
+                </span>
+                Thông Tin Cơ Bản
+              </h2>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Giá (VND) *
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Tên Gói Khám
                   </label>
                   <input
-                    type="number"
-                    name="price"
-                    min="0"
-                    value={form.price}
+                    name="title"
+                    value={form.title}
                     onChange={handleChange}
-                    placeholder="0"
-                    className="w-full px-3 py-2 bg-input border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Ví dụ: Gói Khám Toàn Thân Cơ Bản"
                     required
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900 placeholder-slate-500"
                   />
                 </div>
 
-                <div className="flex items-end">
-                  <label className="flex items-center gap-3 cursor-pointer">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Mô Tả Chi Tiết
+                  </label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    placeholder="Nhập mô tả chi tiết về gói khám..."
+                    required
+                    rows={4}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900 placeholder-slate-500 resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full text-sm font-bold">
+                  2
+                </span>
+                Thời Hạn Gói Khám & Giá
+              </h2>
+              <div className="space-y-4">
+                {form.durations.map((d, idx) => (
+                  <div key={d.value} className="flex items-center gap-4 mb-2">
                     <input
                       type="checkbox"
-                      name="isActive"
-                      checked={form.isActive}
-                      onChange={handleChange}
-                      className="w-5 h-5 rounded border border-border bg-input cursor-pointer"
+                      checked={d.checked}
+                      onChange={(e) =>
+                        handleDurationChange(idx, "checked", e.target.checked)
+                      }
+                      className="accent-blue-600 w-4 h-4"
                     />
-                    <span className="text-sm font-medium text-foreground">
-                      Kích hoạt gói
+                    <span className="text-sm text-slate-700 w-40">
+                      {d.label}
                     </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={d.price}
+                      onChange={(e) =>
+                        handleDurationChange(idx, "price", e.target.value)
+                      }
+                      placeholder="Giá cho thời hạn này (VND)"
+                      className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900"
+                    />
+                  </div>
+                ))}
+                {form.customDurations.map((c, idx) => (
+                  <div key={idx} className="flex items-center gap-4 mb-2">
+                    <input
+                      type="checkbox"
+                      checked={!!c.value}
+                      disabled
+                      className="accent-blue-600 w-4 h-4"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      value={c.value}
+                      onChange={(e) =>
+                        handleCustomDurationChange(idx, "value", e.target.value)
+                      }
+                      placeholder="Thời hạn tuỳ ý (ngày)"
+                      className="w-40 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm text-slate-900"
+                    />
+                    <input
+                      type="text"
+                      value={c.price}
+                      onChange={(e) =>
+                        handleCustomDurationChange(idx, "price", e.target.value)
+                      }
+                      onKeyDown={handlePriceKeyDown}
+                      placeholder="Giá cho thời hạn này (VND)"
+                      className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2
+             focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900"
+                    />
 
-          {/* Duration */}
-          <div className="border border-border rounded-lg p-6 bg-card">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Thời hạn khám
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Chọn các khoảng thời hạn
-                </label>
-                <select
-                  multiple
-                  value={form.durationOptions}
-                  onChange={handleDurationOptionsChange}
-                  className="w-full px-3 py-2 bg-input border border-border rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    <button
+                      type="button"
+                      onClick={() => removeCustomDuration(idx)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition"
+                      title="Xóa thời hạn"
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addCustomDuration}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 text-slate-700 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition font-medium text-sm"
                 >
-                  <option value={30}>1 tháng</option>
-                  <option value={90}>3 tháng</option>
-                  <option value={180}>6 tháng</option>
-                  <option value={270}>9 tháng</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Thời hạn tùy ý (ngày)
-                </label>
-                <input
-                  type="number"
-                  name="customDuration"
-                  min="1"
-                  value={form.customDuration || ""}
-                  onChange={handleChange}
-                  placeholder="VD: 365"
-                  className="w-full px-3 py-2 bg-input border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+                  + Thêm Thời Hạn Tuỳ Ý
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* Services */}
-          <div className="border border-border rounded-lg p-6 bg-card">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Dịch vụ khám
-            </h2>
-
-            {/* --- HEADER TITLES --- */}
-            <div className="grid grid-cols-12 font-medium text-sm text-foreground mb-2 px-1">
-              <div className="col-span-5">Tên dịch vụ</div>
-              <div className="col-span-6">Mô tả ngắn gọn</div>
-              <div className="col-span-1 flex items-center justify-center">
-                Xóa
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {form.service.map((s, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-12 gap-2 pb-3 border-b border-border last:border-0"
-                >
-                  {/* Service Name */}
-                  <input
-                    type="text"
-                    value={s.serviceName}
-                    onChange={(e) =>
-                      handleServiceChange(idx, "serviceName", e.target.value)
-                    }
-                    placeholder="Tên dịch vụ"
-                    className="col-span-5 px-3 py-2 bg-input border border-border rounded text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    required
-                  />
-
-                  {/* Service Description */}
-                  <input
-                    type="text"
-                    value={s.serviceDescription}
-                    onChange={(e) =>
-                      handleServiceChange(
-                        idx,
-                        "serviceDescription",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Mô tả ngắn gọn"
-                    className="col-span-6 px-3 py-2 bg-input border border-border rounded text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => deleteService(idx)}
-                    className="col-span-1 
-             flex items-center justify-center
-             bg-muted border border-border 
-             rounded-md w-full h-full
-             hover:bg-muted/70
-             text-destructive font-bold text-sm 
-             transition"
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full text-sm font-bold">
+                  3
+                </span>
+                Dịch Vụ Bao Gồm
+              </h2>
+              <div className="space-y-4 mb-4">
+                {form.service.map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="flex gap-3 items-end p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-slate-300 transition"
                   >
-                    X
-                  </button>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        Tên Dịch Vụ
+                      </label>
+                      <input
+                        value={s.serviceName}
+                        onChange={(e) =>
+                          handleServiceChange(
+                            idx,
+                            "serviceName",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Ví dụ: Khám Tim Mạch"
+                        required
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm text-slate-900 placeholder-slate-400"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        Mô Tả Dịch Vụ
+                      </label>
+                      <input
+                        value={s.serviceDescription}
+                        onChange={(e) =>
+                          handleServiceChange(
+                            idx,
+                            "serviceDescription",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Mô tả ngắn gọn..."
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm text-slate-900 placeholder-slate-400"
+                      />
+                    </div>
+                    {form.service.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeService(idx)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition"
+                        title="Xóa dịch vụ"
+                      >
+                        X
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
 
               <button
                 type="button"
                 onClick={addService}
-                className="w-full mt-4 px-4 py-2 text-primary border border-primary rounded hover:bg-primary/10 transition-colors font-medium text-sm"
+                className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 text-slate-700 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition font-medium text-sm"
               >
-                + Thêm dịch vụ
+                + Thêm Dịch Vụ
               </button>
             </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-            >
-              {loading ? "Đang cập nhật..." : "Cập nhật gói khám"}
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-3 pt-6 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => window.history.back()}
+                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Quay lại
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="ml-auto px-8 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Đang cập nhật..." : "Cập nhật Gói Khám"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

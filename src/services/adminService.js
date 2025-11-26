@@ -1,10 +1,3 @@
-// Admin: Lấy chi tiết 1 đăng ký gói khám
-export const getRegisteredPackageById = async (id) => {
-  const { data } = await axios.get(`${ADMIN_API_BASE}/registered-packages/${id}`, {
-    headers: { ...getAuthHeader() },
-  });
-  return data;
-};
 import axios from "axios";
 
 import API_BASE_URL from "../config/api";
@@ -19,7 +12,20 @@ const getAuthHeader = () => {
                 localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
-
+// Admin: Lấy danh sách mối quan hệ đã liên kết (elderly) theo familyId (dành cho admin)
+export const getAcceptRelationshipByFamilyIdAdmin = async (familyId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/relationship/accepted-family/${familyId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+// Admin: Lấy chi tiết 1 đăng ký gói khám
+export const getRegisteredPackageById = async (id) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/registered-packages/${id}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
 // Admin: Tạo tài khoản supporter mới
 export const createSupporter = async (payload) => {
   // expected payload: { fullName, phoneNumber, gender, password, email? }

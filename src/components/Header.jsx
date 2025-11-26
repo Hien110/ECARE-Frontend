@@ -15,7 +15,8 @@ import ROUTE_PATH from "../constants/routePath";
 
 function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isPackagesOpen, setIsPackagesOpen] = useState(false); // NEW
+  const [isPackagesOpen, setIsPackagesOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { pathname } = useLocation();
 
   return (
@@ -109,16 +110,43 @@ function Header() {
           <LayoutGrid size={16} /> Bảng Thống Kê
         </Link>
 
-        <Link
-          to="/admin/users"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith("/admin/users")
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
+        {/* User Management dropdown: giống dịch vụ hỗ trợ sức khỏe */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsUserMenuOpen(true)}
+          onMouseLeave={() => setIsUserMenuOpen(false)}
         >
-          <Users size={16} /> Quản Lý Người Dùng
-        </Link>
+          <button
+            onClick={() => setIsUserMenuOpen((v) => !v)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
+              pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/family-elder")
+                ? "bg-blue-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            aria-haspopup="true"
+            aria-expanded={isUserMenuOpen}
+            type="button"
+          >
+            <Users size={16} /> Quản Lý Người Dùng
+            <ChevronDown size={14} className="ml-1" />
+          </button>
+          {isUserMenuOpen && (
+            <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+              <Link
+                to="/admin/staff"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý nhân viên
+              </Link>
+              <Link
+                to="/admin/user"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý người dùng
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Packages dropdown: use mouse events to control open state */}
         <div

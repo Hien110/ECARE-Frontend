@@ -36,8 +36,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Welcome back, Admin User. Here's what's happening today.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Bảng Thống Kê</h1>
+        <p className="text-gray-600">Chào Mừng Quay Trở Lại, Quản Trị Viên. Đây Là Trang Thống Kê Khám Bệnh.</p>
       </div>
 
       {/* Main Grid */}
@@ -46,8 +46,8 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Monthly Revenue Record</h3>
-              <p className="text-sm text-gray-500">Elder care facility revenue tracking</p>
+              <h3 className="text-lg font-semibold text-gray-900">Hồ sơ doanh thu hàng tháng</h3>
+              <p className="text-sm text-gray-500">Theo dõi doanh thu của cơ sở chăm sóc người cao tuổi</p>
             </div>
             <div className="flex space-x-1">
               <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -62,35 +62,35 @@ export default function Dashboard() {
               {/* Chart bars - still static for now */}
               <div className="flex flex-col items-center">
                 <div className="w-12 h-16 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Jan</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 1</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-20 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Feb</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 2</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-32 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Mar</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 3</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Apr</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 4</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-28 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">May</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 5</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-24 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Jun</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 6</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-36 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Jul</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 7</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-18 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Aug</span>
+                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 8</span>
               </div>
             </div>
           </div>
@@ -98,19 +98,19 @@ export default function Dashboard() {
           {/* Stats */}
           <div className="grid grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Pending</div>
+              <div className="text-sm text-gray-500 mb-1">Chưa Xử Lý</div>
               <div className="text-xl font-bold text-orange-600">{(paymentsByStatus?.pending?.total ?? 0).toLocaleString()} VND</div>
             </div>
             <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Completed</div>
+              <div className="text-sm text-gray-500 mb-1">Đã Hoàn Thành</div>
               <div className="text-xl font-bold text-green-600">{(paymentsByStatus?.completed?.total ?? 0).toLocaleString()} VND</div>
             </div>
             <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Rejected</div>
+              <div className="text-sm text-gray-500 mb-1">Đã Từ Chối</div>
               <div className="text-xl font-bold text-red-600">{(paymentsByStatus?.failed?.total ?? 0).toLocaleString()} VND</div>
             </div>
             <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Revenue</div>
+              <div className="text-sm text-gray-500 mb-1">Doanh Thu</div>
               <div className="text-xl font-bold text-blue-600">{(totalRevenue ?? 0).toLocaleString()} VND</div>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">{counts.totalResidents.toLocaleString()}</div>
               <div className="bg-white/20 px-2 py-1 rounded text-sm">{counts.totalResidents ? Math.round((counts.totalResidents / (counts.totalResidents + counts.familyMembers + counts.activeSupporters + counts.doctors + 1)) * 100) + '%' : '0%'}</div>
             </div>
-            <div className="text-blue-100 text-sm mb-4">Total Residents</div>
+            <div className="text-blue-100 text-sm mb-4">Thống Kê Người Già</div>
             <div className="h-16 bg-white/10 rounded-lg mb-4"></div>
           </div>
 
@@ -137,8 +137,8 @@ export default function Dashboard() {
                     <div className="w-4 h-4 bg-green-500 rounded-full"></div>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Healthcare Services</div>
-                    <div className="text-sm text-gray-500">Elder Care</div>
+                    <div className="font-medium text-gray-900">Dịch Vụ Chăm Sóc Sức Khỏe</div>
+                    <div className="text-sm text-gray-500">Chăm sóc người cao tuổi</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -153,8 +153,8 @@ export default function Dashboard() {
                     <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Physical Therapy</div>
-                    <div className="text-sm text-gray-500">Rehabilitation</div>
+                    <div className="font-medium text-gray-900">Dịch Vụ Hỗ Trợ Sức Khỏe</div>
+                    <div className="text-sm text-gray-500">Phục hồi chức năng</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -169,8 +169,8 @@ export default function Dashboard() {
                     <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Social Activities</div>
-                    <div className="text-sm text-gray-500">Recreation</div>
+                    <div className="font-medium text-gray-900">Hoạt động xã hội</div>
+                    <div className="text-sm text-gray-500">Giải trí</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -179,76 +179,43 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-
-            <button className="w-full mt-4 text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors">
-              FULL DETAILS
-            </button>
           </div>
         </div>
       </div>
 
       {/* Bottom Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <span className="text-sm text-gray-600">Tasks Completed</span>
-            </div>
-            <span className="text-xs text-gray-500">22/35 completed</span>
+        {/* Family Members Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">22/35</div>
-          <div className="h-2 bg-gray-200 rounded-full mb-3">
-            <div className="h-2 bg-blue-500 rounded-full" style={{ width: "63%" }}></div>
-          </div>
-          <div className="text-sm text-green-600">28% more from last week</div>
+          <div className="text-lg font-semibold text-gray-700 mb-1">Số lượng Family</div>
+          <div className="text-3xl font-bold text-blue-600 mb-1">{counts.familyMembers?.toLocaleString() ?? 0}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <span className="text-sm text-gray-600">New Tasks</span>
-            </div>
-            <span className="text-xs text-gray-500">5/20 completed</span>
+        {/* Elderly Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">5/20</div>
-          <div className="h-2 bg-gray-200 rounded-full mb-3">
-            <div className="h-2 bg-green-500 rounded-full" style={{ width: "25%" }}></div>
-          </div>
-          <div className="text-sm text-green-600">34% more from last week</div>
+          <div className="text-lg font-semibold text-gray-700 mb-1">Số lượng Người Già</div>
+          <div className="text-3xl font-bold text-green-600 mb-1">{counts.totalResidents?.toLocaleString() ?? 0}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <span className="text-sm text-gray-600">Project Done</span>
-            </div>
-            <span className="text-xs text-gray-500">20/30 completed</span>
+        {/* Staff Card (Doctors + Supporters) */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+            <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5s-3 1.34-3 3 1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05C15.64 14.1 17 15.28 17 16.5V19h7v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">20/30</div>
-          <div className="h-2 bg-gray-200 rounded-full mb-3">
-            <div className="h-2 bg-orange-500 rounded-full" style={{ width: "67%" }}></div>
-          </div>
-          <div className="text-sm text-green-600">42% more from last week</div>
+          <div className="text-lg font-semibold text-gray-700 mb-1">Số lượng Nhân Viên</div>
+          <div className="text-3xl font-bold text-orange-600 mb-1">{(counts.doctors + counts.activeSupporters)?.toLocaleString() ?? 0}</div>
         </div>
       </div>
     </div>
