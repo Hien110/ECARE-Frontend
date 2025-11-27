@@ -151,20 +151,22 @@ export default function AdminListHealthPackagePage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
-                          {pkg.durationOptions?.map((duration) => (
+                          {pkg.optionDuration?.map((opt, i) => (
                             <span
-                              key={duration}
+                              key={opt.days + '-' + i}
                               className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
                             >
-                              {duration} ngày
+                              {opt.days} ngày: {opt.fee?.toLocaleString()}đ
                             </span>
                           ))}
-
-                          {pkg.customDuration && (
-                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                              Tuỳ ý: {pkg.customDuration}d
+                          {pkg.customDurations?.map((opt, i) => (
+                            <span
+                              key={opt.days + '-custom-' + i}
+                              className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium"
+                            >
+                              Tuỳ ý: {opt.days} ngày - {opt.fee?.toLocaleString()}đ
                             </span>
-                          )}
+                          ))}
                         </div>
                       </td>
 

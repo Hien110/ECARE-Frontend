@@ -7,17 +7,15 @@ export default function AdminCreateHealthPackagePage() {
   const [form, setForm] = useState({
     title: "",
     durations: [
-      { checked: false, value: 30, label: "1 Tháng (30 ngày)", price: "" },
-      { checked: false, value: 90, label: "3 Tháng (90 ngày)", price: "" },
-      { checked: false, value: 180, label: "6 Tháng (180 ngày)", price: "" },
-      { checked: false, value: 270, label: "9 Tháng (270 ngày)", price: "" },
-      { checked: false, value: 365, label: "1 Năm (365 ngày)", price: "" },
+      { checked: false, days: 30, label: "1 Tháng (30 ngày)", fee: "", isOption: true },
+      { checked: false, days: 90, label: "3 Tháng (90 ngày)", fee: "", isOption: true },
+      { checked: false, days: 180, label: "6 Tháng (180 ngày)", fee: "", isOption: true },
+      { checked: false, days: 270, label: "9 Tháng (270 ngày)", fee: "", isOption: true },
+      { checked: false, days: 365, label: "1 Năm (365 ngày)", fee: "", isOption: true },
     ],
-    customDurations: [], 
     service: [{ serviceName: "", serviceDescription: "" }],
     description: "",
     isActive: true,
-    price: "", 
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +51,8 @@ export default function AdminCreateHealthPackagePage() {
     }));
   };
 
-  const handleDurationChange = (idx, field, value) => {
+  // Handler for fixed durations (option)
+  const handleOptionDurationChange = (idx, field, value) => {
     setForm((prev) => {
       const durations = [...prev.durations];
       if (field === "checked") durations[idx][field] = value;
@@ -62,27 +61,31 @@ export default function AdminCreateHealthPackagePage() {
     });
   };
 
+  // Handler for custom durations
   const handleCustomDurationChange = (idx, field, value) => {
     setForm((prev) => {
-      const customDurations = [...prev.customDurations];
-      if (field === "value")
-        customDurations[idx][field] = value.replace(/[^0-9]/g, "");
-      else customDurations[idx][field] = value.replace(/[^0-9]/g, "");
-      return { ...prev, customDurations };
+      const durations = [...prev.durations];
+      durations[idx][field] = value.replace(/[^0-9]/g, "");
+      return { ...prev, durations };
     });
   };
 
+  // Add a new custom duration
   const addCustomDuration = () => {
     setForm((prev) => ({
       ...prev,
-      customDurations: [...prev.customDurations, { value: "", price: "" }],
+      durations: [
+        ...prev.durations,
+        { checked: true, days: "", fee: "", isOption: false },
+      ],
     }));
   };
 
+  // Remove a custom duration (only for custom, not option)
   const removeCustomDuration = (idx) => {
     setForm((prev) => ({
       ...prev,
-      customDurations: prev.customDurations.filter((_, i) => i !== idx),
+      durations: prev.durations.filter((d, i) => i !== idx),
     }));
   };
   const handlePriceKeyDown = (e) => {
@@ -106,27 +109,21 @@ export default function AdminCreateHealthPackagePage() {
     setError("");
     setLoading(true);
 
-    // Xử lý dữ liệu gửi lên backend
-    const durationOptions = form.durations.filter(d => d.checked).map(d => Number(d.value));
-    // fees: mảng các mốc cố định và giá
-    const fees = form.durations
-      .filter(d => d.checked && d.price !== "")
-      .map(d => ({ days: Number(d.value), fee: Number(d.price) }));
-    let customDuration, customDurationPrice;
-    if (form.customDurations.length > 0) {
-      const firstCustom = form.customDurations[0];
-      customDuration = Number(firstCustom.value) || undefined;
-      customDurationPrice = Number(firstCustom.price) || undefined;
-    }
+    // Chuẩn hóa dữ liệu gửi lên backend theo model mới
+    const durations = form.durations
+      .filter((d) => d.checked && d.fee !== "")
+      .map((d) => ({
+        days: Number(d.days),
+        fee: Number(d.fee),
+        isOption: !!d.isOption
+      }));
+
     const payload = {
       title: form.title,
-      durationOptions,
-      fees,
+      durations,
       service: form.service,
       description: form.description,
       isActive: form.isActive,
-      customDuration,
-      customDurationPrice
     };
     try {
       await createHealthPackage(payload);
@@ -205,71 +202,75 @@ export default function AdminCreateHealthPackagePage() {
                 Thời Hạn Gói Khám & Giá
               </h2>
               <div className="space-y-4">
-                {form.durations.map((d, idx) => (
-                  <div key={d.value} className="flex items-center gap-4 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={d.checked}
-                      onChange={(e) =>
-                        handleDurationChange(idx, "checked", e.target.checked)
-                      }
-                      className="accent-blue-600 w-4 h-4"
-                    />
-                    <span className="text-sm text-slate-700 w-40">
-                      {d.label}
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={d.price}
-                      onChange={(e) =>
-                        handleDurationChange(idx, "price", e.target.value)
-                      }
-                      placeholder="Giá cho thời hạn này (VND)"
-                      className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900"
-                    />
-                  </div>
-                ))}
-                {form.customDurations.map((c, idx) => (
-                  <div key={idx} className="flex items-center gap-4 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={!!c.value}
-                      disabled
-                      className="accent-blue-600 w-4 h-4"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      value={c.value}
-                      onChange={(e) =>
-                        handleCustomDurationChange(idx, "value", e.target.value)
-                      }
-                      placeholder="Thời hạn tuỳ ý (ngày)"
-                      className="w-40 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm text-slate-900"
-                    />
-                    <input
-                      type="text"
-                      value={c.price}
-                      onChange={(e) =>
-                        handleCustomDurationChange(idx, "price", e.target.value)
-                      }
-                      onKeyDown={handlePriceKeyDown}
-                      placeholder="Giá cho thời hạn này (VND)"
-                      className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2
-             focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => removeCustomDuration(idx)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition"
-                      title="Xóa thời hạn"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
+                {/* Option durations (fixed) */}
+                {form.durations.map((d, idx) =>
+                  d.isOption ? (
+                    <div key={d.days} className="flex items-center gap-4 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={d.checked}
+                        onChange={(e) =>
+                          handleOptionDurationChange(idx, "checked", e.target.checked)
+                        }
+                        className="accent-blue-600 w-4 h-4"
+                      />
+                      <span className="text-sm text-slate-700 w-40">
+                        {d.label}
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={d.fee}
+                        onChange={(e) =>
+                          handleOptionDurationChange(idx, "fee", e.target.value)
+                        }
+                        placeholder="Giá cho thời hạn này (VND)"
+                        className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900"
+                      />
+                    </div>
+                  ) : null
+                )}
+                {/* Custom durations */}
+                {form.durations.map((c, idx) =>
+                  !c.isOption ? (
+                    <div key={idx} className="flex items-center gap-4 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={!!c.days}
+                        disabled
+                        className="accent-blue-600 w-4 h-4"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        value={c.days}
+                        onChange={(e) =>
+                          handleCustomDurationChange(idx, "days", e.target.value)
+                        }
+                        placeholder="Thời hạn tuỳ ý (ngày)"
+                        className="w-40 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm text-slate-900"
+                      />
+                      <input
+                        type="text"
+                        value={c.fee}
+                        onChange={(e) =>
+                          handleCustomDurationChange(idx, "fee", e.target.value)
+                        }
+                        onKeyDown={handlePriceKeyDown}
+                        placeholder="Giá cho thời hạn này (VND)"
+                        className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCustomDuration(idx)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition"
+                        title="Xóa thời hạn"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ) : null
+                )}
                 <button
                   type="button"
                   onClick={addCustomDuration}
