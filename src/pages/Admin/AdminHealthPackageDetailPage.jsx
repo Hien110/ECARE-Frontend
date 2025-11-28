@@ -92,26 +92,21 @@ export default function AdminHealthPackageDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {pkg.fees?.map((f, idx) => (
-                    <tr key={idx} className="hover:bg-blue-50 transition-colors">
-                      <td className="px-4 py-4 font-medium text-gray-900">{f.days} ngày</td>
+                  {pkg.durations?.map((d, idx) => (
+                    <tr key={idx} className={`hover:bg-blue-50 transition-colors ${!d.isOption ? 'bg-gray-50' : ''}`}>
+                      <td className="px-4 py-4 font-medium text-gray-900">
+                        {d.days} ngày {d.isOption ? null : <span className="text-xs font-normal text-gray-500">(tuỳ chọn)</span>}
+                      </td>
                       <td className="px-4 py-4 text-right">
-                        <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 font-bold px-3 py-1 rounded-lg">
-                          {f.fee?.toLocaleString()} đ
+                        <span className={`inline-flex items-center gap-1 font-bold px-3 py-1 rounded-lg ${d.isOption ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                          {d.fee?.toLocaleString()} đ
                         </span>
                       </td>
                     </tr>
                   ))}
-                  {pkg.customDuration && (
-                    <tr className="hover:bg-blue-50 transition-colors bg-gray-50">
-                      <td className="px-4 py-4 font-medium text-gray-900">
-                        {pkg.customDuration} ngày <span className="text-xs font-normal text-gray-500">(tuỳ chọn)</span>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-bold px-3 py-1 rounded-lg">
-                          {pkg.customDurationPrice?.toLocaleString()} đ
-                        </span>
-                      </td>
+                  {(!pkg.durations || pkg.durations.length === 0) && (
+                    <tr>
+                      <td colSpan={2} className="text-center text-gray-500 py-8">Không có bảng giá</td>
                     </tr>
                   )}
                 </tbody>

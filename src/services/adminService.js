@@ -161,6 +161,16 @@ export const checkAdminAccess = () => {
     return false;
   }
 };
+// Admin: Lấy danh sách lịch hẹn supporter theo status
+export const getSupporterSchedulesByStatus = async (status) => {
+  const params = status ? { status } : {};
+  const query = new URLSearchParams(params).toString();
+  const url = query ? `${ADMIN_API_BASE}/supporter-schedules?${query}` : `${ADMIN_API_BASE}/supporter-schedules`;
+  const { data } = await axios.get(url, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
 
 // Utility: Format dữ liệu supporter cho hiển thị
 export const formatSupporterData = (supporterData) => {
@@ -241,6 +251,7 @@ export const validateSupporterData = (data) => {
 };
 
 const adminService = {
+  getSupporterSchedulesByStatus,
   createSupporter,
   createDoctor,
   getSupporterProfile,

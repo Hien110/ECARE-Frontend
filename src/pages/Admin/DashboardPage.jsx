@@ -1,15 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import adminService from '../../services/adminService';
+import adminService, { getSupporterSchedulesByStatus } from '../../services/adminService';
+import  {getHealthPackages} from '@/services/healthPackageService';
 
-export default function Dashboard() {
+const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
+  const [packages, setPackages] = useState([]);
+  const [error, setError] = useState('');
   const [stats, setStats] = useState({
     counts: { totalResidents: 0, familyMembers: 0, activeSupporters: 0, doctors: 0, admins: 0 },
     paymentsByStatus: {},
     totalRevenue: 0,
     monthlyRevenue: 0
   });
+  const [supporterCompleted, setSupporterCompleted] = useState(0);
+  const [supporterCanceled, setSupporterCanceled] = useState(0);
 
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await getHealthPackages();
+        if (Array.isArray(res)) setPackages(res);
+        else if (Array.isArray(res?.data)) setPackages(res.data);
+        else setPackages([]);
+      } catch (err) {
+        setError(err?.message || 'Lỗi khi lấy danh sách gói khám');
+        console.error('[v0] Error fetching health packages:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackages();
+
+    // Lấy số lượng lịch hẹn supporter đã hoàn thành
+    getSupporterSchedulesByStatus('completed')
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data)) {
+          setSupporterCompleted(res.data.length);
+        } else {
+          setSupporterCompleted(0);
+        }
+      })
+      .catch(() => setSupporterCompleted(0));
+
+    // Lấy số lượng lịch hẹn supporter đã hủy
+    getSupporterSchedulesByStatus('canceled')
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data)) {
+          setSupporterCanceled(res.data.length);
+        } else {
+          setSupporterCanceled(0);
+        }
+      })
+      .catch(() => setSupporterCanceled(0));
+  }, []);
   useEffect(() => {
     let mounted = true;
     const fetchDashboard = async () => {
@@ -31,6 +74,9 @@ export default function Dashboard() {
   if (loading) return <div className="p-6">Đang tải dashboard...</div>;
 
   const { counts, paymentsByStatus, totalRevenue, monthlyRevenue } = stats;
+
+  // Đếm số lượng gói khám đang active
+  const activeHealthPackages = packages.filter(pkg => pkg.isActive).length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -158,8 +204,8 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-gray-900">1450</div>
-                  <div className="text-sm text-gray-500">3 active</div>
+                  <div className="font-bold text-gray-900">{activeHealthPackages} dịch vụ</div>
+                  <div className="text-sm text-gray-500">{activeHealthPackages} active</div>
                 </div>
               </div>
 
@@ -169,13 +215,14 @@ export default function Dashboard() {
                     <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Hoạt động xã hội</div>
-                    <div className="text-sm text-gray-500">Giải trí</div>
+                    <div className="font-medium text-gray-900">Lịch Hẹn Với Cộng Tác Viên</div>
+                    <div className="text-sm text-gray-500">Thuê và đặt lịch hẹn với cộng tác viên</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-gray-900">1250</div>
-                  <div className="text-sm text-gray-500">3 active</div>
+                  <div className="font-bold text-gray-900" style={{ fontSize: '2rem' }}>{supporterCompleted + supporterCanceled}</div>
+                  <div className="text-sm text-green-600">{supporterCompleted} đã hoàn thành</div>
+                  <div className="text-sm text-red-600">{supporterCanceled} đã hủy</div>
                 </div>
               </div>
             </div>
@@ -221,3 +268,4 @@ export default function Dashboard() {
     </div>
   )
 }
+export default DashboardPage;

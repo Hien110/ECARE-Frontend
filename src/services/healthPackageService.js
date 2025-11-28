@@ -16,7 +16,7 @@ export const getHealthPackages = async () => {
 };
 
 // Tạo mới gói khám
-// data cần có: title, durationOptions, fees, service, description, isActive, customDuration, customDurationPrice
+// data cần có: title, durations (array {days, fee, isOption}), service, description, isActive
 export const createHealthPackage = async (data) => {
 	const token = localStorage.getItem('token');
 	const res = await axios.post(`${PACKAGE_API_URL}/health-packages`, data, {
@@ -40,7 +40,7 @@ export const getHealthPackageDetail = async (id) => {
 };
 
 // Cập nhật gói khám
-// data cần có: title, durationOptions, fees, service, description, isActive, customDuration, customDurationPrice
+// data cần có: title, durations (array {days, fee, isOption}), service, description, isActive
 export const updateHealthPackage = async (id, data) => {
 	const token = localStorage.getItem('token');
 	const res = await axios.put(`${PACKAGE_API_URL}/update-package/${id}`, data, {
