@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, Link } from "react-router-dom"
 import adminService from "../../services/adminService"
 import { getUsedPackagesByBeneficiary, getRegisteredPackagesByRegistrant, getSupporterSchedulesByElderly } from "../../services/healthPackageService"
+import ROUTE_PATH from "../../constants/routePath"
 
 const AdminElderlyDetailPage = () => {
   const [params] = useSearchParams()
@@ -400,37 +401,44 @@ const AdminElderlyDetailPage = () => {
                   </div>
                 ) : supporterSchedules.length > 0 ? (
                   <div className="space-y-4">
-                    {supporterSchedules.map((sch, idx) => (
-                      <div key={sch._id || idx} className="border border-indigo-100 rounded-xl p-5 bg-indigo-50/40 hover:bg-indigo-50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-bold text-indigo-800">{sch.supporter?.fullName || "Người hỗ trợ"}</div>
-                            <div className="text-sm text-gray-700 mt-1">{sch.service?.name || "Dịch vụ hỗ trợ"}</div>
-                            <div className="text-xs text-gray-600 mt-2">
-                              {sch.bookingType === 'session' && sch.scheduleDate
-                                ? `${formatDate(sch.scheduleDate)} ${sch.scheduleTime ? `- ${sch.scheduleTime}` : ''}`
-                                : sch.bookingType === 'day' && sch.scheduleDate
-                                ? `Ngày: ${formatDate(sch.scheduleDate)}`
-                                : sch.bookingType === 'month' && sch.monthStart && sch.monthEnd
-                                ? `Từ ${formatDate(sch.monthStart)} → ${formatDate(sch.monthEnd)}`
-                                : "Chưa xác định thời gian"}
+                    {supporterSchedules.map((sch, idx) => {
+                      const url = ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL.replace(":id", sch._id);
+                      return (
+                        <Link
+                          key={sch._id || idx}
+                          to={url}
+                          className="block border border-indigo-100 rounded-xl p-5 bg-indigo-50/40 hover:bg-indigo-50 transition-colors cursor-pointer no-underline"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-bold text-indigo-800">{sch.supporter?.fullName || "Người hỗ trợ"}</div>
+                              <div className="text-sm text-gray-700 mt-1">{sch.service?.name || "Dịch vụ hỗ trợ"}</div>
+                              <div className="text-xs text-gray-600 mt-2">
+                                {sch.bookingType === 'session' && sch.scheduleDate
+                                  ? `${formatDate(sch.scheduleDate)} ${sch.scheduleTime ? `- ${sch.scheduleTime}` : ''}`
+                                  : sch.bookingType === 'day' && sch.scheduleDate
+                                  ? `Ngày: ${formatDate(sch.scheduleDate)}`
+                                  : sch.bookingType === 'month' && sch.monthStart && sch.monthEnd
+                                  ? `Từ ${formatDate(sch.monthStart)} → ${formatDate(sch.monthEnd)}`
+                                  : "Chưa xác định thời gian"}
+                              </div>
                             </div>
+                            <span className={`px-4 py-2 rounded-full text-xs font-bold ${
+                              sch.status === 'completed' ? 'bg-green-100 text-green-700' :
+                              sch.status === 'canceled' ? 'bg-red-100 text-red-700' :
+                              sch.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {sch.status === 'pending' && 'Chờ xác nhận'}
+                              {sch.status === 'confirmed' && 'Đã xác nhận'}
+                              {sch.status === 'in_progress' && 'Đang thực hiện'}
+                              {sch.status === 'completed' && 'Hoàn thành'}
+                              {sch.status === 'canceled' && 'Đã hủy'}
+                            </span>
                           </div>
-                          <span className={`px-4 py-2 rounded-full text-xs font-bold ${
-                            sch.status === 'completed' ? 'bg-green-100 text-green-700' :
-                            sch.status === 'canceled' ? 'bg-red-100 text-red-700' :
-                            sch.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {sch.status === 'pending' && 'Chờ xác nhận'}
-                            {sch.status === 'confirmed' && 'Đã xác nhận'}
-                            {sch.status === 'in_progress' && 'Đang thực hiện'}
-                            {sch.status === 'completed' && 'Hoàn thành'}
-                            {sch.status === 'canceled' && 'Đã hủy'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-16 text-gray-500">
