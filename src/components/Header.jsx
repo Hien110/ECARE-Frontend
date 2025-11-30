@@ -9,11 +9,12 @@ import {
   BarChart3,
   MessageCircle,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import ROUTE_PATH from "../constants/routePath";
 
 function Header() {
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const [isPackagesOpen, setIsPackagesOpen] = useState(false);
@@ -80,19 +81,10 @@ function Header() {
 
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                  <Link
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    to="#"
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                    onClick={() => navigate("/")}
                   >
-                    Profile
-                  </Link>
-                  <Link
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    to="#"
-                  >
-                    Settings
-                  </Link>
-                  <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50">
                     Logout
                   </button>
                 </div>
