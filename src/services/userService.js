@@ -1,8 +1,7 @@
 // services/userService.js
 import axios from 'axios';
-import API_BASE_URL from "../config/api";
-  
-const API_URL = `${API_BASE_URL}/api/users`;
+
+const API_URL = import.meta?.env?.VITE_API_URL?.replace(/\/+$/, '') || 'http://localhost:3000/api/users';
 
 // Tạo 1 axios instance dùng chung
 const api = axios.create({
@@ -133,6 +132,24 @@ const userService = {
         success: false,
         data: null,
         message: error?.response?.data?.message || 'Lấy thông tin người dùng thất bại',
+      };
+    }
+  },
+
+  // Lấy danh sách tất cả người cao tuổi
+  getAllElderly: async () => {
+    try {
+      const res = await api.get('/get-elderly');
+      return {
+        success: true,
+        data: res.data?.data,
+        message: res.data?.message || 'Lấy danh sách người cao tuổi thành công',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error?.response?.data?.message || 'Lấy danh sách người cao tuổi thất bại',
       };
     }
   },
