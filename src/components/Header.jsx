@@ -116,7 +116,9 @@ function Header() {
           <button
             onClick={() => setIsUserMenuOpen((v) => !v)}
             className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-              pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/family-elder")
+              pathname.startsWith("/admin/staff") || 
+              pathname.startsWith("/admin/user") || 
+              pathname.startsWith("/admin/elderly-location")
                 ? "bg-blue-600 text-white"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
@@ -140,6 +142,12 @@ function Header() {
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
               >
                 Quản lý người dùng
+              </Link>
+              <Link
+                to={ROUTE_PATH.ADMIN_ELDERLY_LOCATION}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý vị trí người cao tuổi
               </Link>
             </div>
           )}
