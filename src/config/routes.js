@@ -25,6 +25,7 @@ const AdminEditPackagePage = React.lazy(() => import("../pages/Admin/AdminEditHe
 const AdminPackageDetailPage = React.lazy(() => import("../pages/Admin/AdminHealthPackageDetailPage"));
 const AdminFamilyElderListPage = React.lazy(()=> import("../pages/Admin/AdminFamilyElderListPage"))
 const AdminStaffListPage = React.lazy(()=> import("../pages/Admin/AdminStaffListPage"))
+const AdminElderlyLocationPage = React.lazy(()=> import("../pages/Admin/AdminElderlyLocationPage"))
 
 // Supporter Services routes
 // (Add supporter services related pages here when available)
@@ -57,6 +58,7 @@ const AppRoutes = [
     { path: ROUTE_PATH.ADMIN_HEALTH_PACKAGE_DETAIL, page: AdminPackageDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_USER, page: AdminFamilyElderListPage, layout: AdminLayout},
     { path: ROUTE_PATH.ADMIN_VIEW_STAFF, page: AdminStaffListPage, layout: AdminLayout},
+    { path: ROUTE_PATH.ADMIN_ELDERLY_LOCATION, page: AdminElderlyLocationPage, layout: AdminLayout },
 
     // Supporter Services routes
     { path: ROUTE_PATH.SUPPORTER_SERVICES, page: AdminListSupporterServices, layout: AdminLayout },
