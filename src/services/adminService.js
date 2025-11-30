@@ -171,6 +171,12 @@ export const getSupporterSchedulesByStatus = async (status) => {
   });
   return data;
 };
+export const getPackagesByDoctor = async (doctorId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/package/${doctorId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
 
 // Utility: Format dữ liệu supporter cho hiển thị
 export const formatSupporterData = (supporterData) => {
@@ -251,6 +257,7 @@ export const validateSupporterData = (data) => {
 };
 
 const adminService = {
+  getPackagesByDoctor,
   getSupporterSchedulesByStatus,
   createSupporter,
   createDoctor,

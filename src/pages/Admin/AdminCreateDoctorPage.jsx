@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import adminService from "../../services/adminService";
-import $ from "jquery";
+import addressData from "vietnam-address-database";
 import BulkImportDoctors from "../Admin/BulkImportDoctorPage";
 
 const AdminCreateDoctorPage = () => {
@@ -25,6 +25,8 @@ const AdminCreateDoctorPage = () => {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedWard, setSelectedWard] = useState(null);
   const [detailedAddress, setDetailedAddress] = useState("");
+  const [provinces, setProvinces] = useState([]);
+  const [wards, setWards] = useState([]);
 
   // Sync address fields into formData.address
   useEffect(() => {
@@ -34,40 +36,23 @@ const AdminCreateDoctorPage = () => {
     }));
   }, [detailedAddress, selectedWard, selectedProvince]);
 
-  // Load provinces & wards via jQuery
+  // Load provinces from local JSON
   useEffect(() => {
-    $(document).ready(function () {
-      $.getJSON('https://esgoo.net/api-tinhthanh-new/1/0.htm', function (data_tinh) {
-        if (data_tinh.error === 0) {
-          $("#tinh").html('<option value="0">Tỉnh Thành</option>');
-          $.each(data_tinh.data, function (_, val_tinh) {
-            $("#tinh").append('<option value="' + val_tinh.id + '">' + val_tinh.full_name + '</option>');
-          });
-
-          $("#tinh").change(function () {
-            const idtinh = $(this).val();
-            const option = this.options[this.selectedIndex];
-            setSelectedProvince({ id: idtinh, name: option ? option.text : '' });
-
-            $.getJSON('https://esgoo.net/api-tinhthanh-new/2/' + idtinh + '.htm', function (data_quan) {
-              if (data_quan.error === 0) {
-                $("#quan").html('<option value="0">Phường Xã</option>');
-                $.each(data_quan.data, function (_, val_quan) {
-                  $("#quan").append('<option value="' + val_quan.id + '">' + val_quan.full_name + '</option>');
-                });
-              }
-            });
-          });
-
-          $(document).on('change', '#quan', function () {
-            const option = this.options[this.selectedIndex];
-            const id = this.value;
-            setSelectedWard({ id, name: option ? option.text : '' });
-          });
-        }
-      });
-    });
+    // addressData is an array with tables: provinces and wards
+    const provincesTable = addressData.find(t => t.name === "provinces");
+    setProvinces(provincesTable?.data || []);
   }, []);
+
+  // Update wards when province changes
+  useEffect(() => {
+    if (selectedProvince) {
+      const wardsTable = addressData.find(t => t.name === "wards");
+      setWards((wardsTable?.data || []).filter(w => w.province_code === selectedProvince.province_code));
+    } else {
+      setWards([]);
+    }
+    setSelectedWard(null);
+  }, [selectedProvince]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -142,8 +127,6 @@ const AdminCreateDoctorPage = () => {
       setSelectedProvince(null);
       setSelectedWard(null);
       setDetailedAddress("");
-      $("#tinh").val("0");
-      $("#quan").html('<option value="0">Phường Xã</option>');
 
       // Redirect after 2 seconds
       setTimeout(() => navigate("/admin/users"), 2000);
@@ -249,11 +232,38 @@ const AdminCreateDoctorPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Tỉnh/Thành phố</label>
-                      <select id="tinh" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></select>
+                      <select
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        value={selectedProvince?.province_code || ""}
+                        onChange={e => {
+                          const code = e.target.value;
+                          const province = provinces.find(p => p.province_code === code);
+                          setSelectedProvince(province || null);
+                        }}
+                      >
+                        <option value="">Chọn tỉnh/thành phố</option>
+                        {provinces.map(province => (
+                          <option key={province.province_code} value={province.province_code}>{province.name}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Phường/Xã</label>
-                      <select id="quan" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></select>
+                      <select
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        value={selectedWard?.ward_code || ""}
+                        onChange={e => {
+                          const code = e.target.value;
+                          const ward = wards.find(w => w.ward_code === code);
+                          setSelectedWard(ward || null);
+                        }}
+                        disabled={!selectedProvince}
+                      >
+                        <option value="">{selectedProvince ? "Chọn phường/xã" : "Chọn tỉnh trước"}</option>
+                        {wards.map(ward => (
+                          <option key={ward.ward_code} value={ward.ward_code}>{ward.name}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   {(selectedProvince || selectedWard || detailedAddress) && (
