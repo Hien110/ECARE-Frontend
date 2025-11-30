@@ -15,7 +15,13 @@ import ROUTE_PATH from "../constants/routePath";
 
 function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isPackagesOpen, setIsPackagesOpen] = useState(false); // NEW
+
+  const [isPackagesOpen, setIsPackagesOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  //const [isPackagesOpen, setIsPackagesOpen] = useState(false); // NEW
+  const [isSupporterServicesOpen, setIsSupporterServicesOpen] = useState(false); // NEW
+
   const { pathname } = useLocation();
 
   return (
@@ -40,7 +46,10 @@ function Header() {
 
           {/* Right: Notifications + Profile */}
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition" aria-label="Notifications">
+            <button
+              className="relative p-2 rounded-full hover:bg-gray-100 transition"
+              aria-label="Notifications"
+            >
               <Bell size={18} className="text-gray-700" />
               <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 text-white text-[10px] px-1">
                 3
@@ -106,16 +115,43 @@ function Header() {
           <LayoutGrid size={16} /> Bảng Thống Kê
         </Link>
 
-        <Link
-          to="/admin/users"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith("/admin/users")
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
+        {/* User Management dropdown: giống dịch vụ hỗ trợ sức khỏe */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsUserMenuOpen(true)}
+          onMouseLeave={() => setIsUserMenuOpen(false)}
         >
-          <Users size={16} /> Quản Lý Người Dùng
-        </Link>
+          <button
+            onClick={() => setIsUserMenuOpen((v) => !v)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
+              pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/family-elder")
+                ? "bg-blue-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            aria-haspopup="true"
+            aria-expanded={isUserMenuOpen}
+            type="button"
+          >
+            <Users size={16} /> Quản Lý Người Dùng
+            <ChevronDown size={14} className="ml-1" />
+          </button>
+          {isUserMenuOpen && (
+            <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+              <Link
+                to="/admin/staff"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý nhân viên
+              </Link>
+              <Link
+                to="/admin/user"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý người dùng
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Packages dropdown: use mouse events to control open state */}
         <div
@@ -136,7 +172,7 @@ function Header() {
             aria-expanded={isPackagesOpen}
             type="button"
           >
-            <MessagesSquare size={16} /> Quản Lý Gói Khám
+            <MessagesSquare size={16} /> Dịch vụ hỗ trợ sức khỏe
             <ChevronDown size={14} className="ml-1" />
           </button>
 
@@ -144,31 +180,60 @@ function Header() {
           {isPackagesOpen && (
             <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
               <Link
-                to="/admin/registered-packages"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
-              >
-                Gói khám đã đăng ký
-              </Link>
-              <Link
                 to="/admin/health-packages"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
               >
-                Gói khám chưa đăng ký
+                Quản lý dịch vụ
+              </Link>
+              <Link
+                to="/admin/registered-packages"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Dịch vụ đã được đăng ký
               </Link>
             </div>
           )}
         </div>
 
-        <Link
-          to="/admin/services"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith("/admin/services")
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
+        {/* Supporter Services dropdown: Similar to health packages dropdown */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsSupporterServicesOpen(true)}
+          onMouseLeave={() => setIsSupporterServicesOpen(false)}
         >
-          <MessageCircle size={16} /> Dịch Vụ
-        </Link>
+          <button
+            onClick={() => setIsSupporterServicesOpen((v) => !v)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
+              pathname.startsWith(ROUTE_PATH.SUPPORTER_SERVICES)
+                ? "bg-blue-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            aria-haspopup="true"
+            aria-expanded={isSupporterServicesOpen}
+            type="button"
+          >
+            Dịch vụ hỗ trợ
+            <ChevronDown size={14} className="ml-1" />
+          </button>
+
+          {isSupporterServicesOpen && (
+            <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+              <Link
+                to={ROUTE_PATH.SUPPORTER_SERVICES}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý dịch vụ
+              </Link>
+              <Link
+                to={ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_LIST}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Dịch vụ đã đặt
+              </Link>
+            </div>
+          )}
+        </div>
+
 
         <Link
           to="/admin/appointments"
@@ -190,17 +255,6 @@ function Header() {
           }`}
         >
           <BarChart3 size={16} /> Báo Cáo
-        </Link>
-
-        <Link
-          to={ROUTE_PATH.SUPPORTER_SERVICES}
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith(ROUTE_PATH.SUPPORTER_SERVICES)
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          Dịch vụ hỗ trợ
         </Link>
       </nav>
     </header>

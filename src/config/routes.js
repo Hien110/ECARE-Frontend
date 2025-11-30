@@ -13,7 +13,6 @@ const AdminDashboardPage = React.lazy(() => import("../pages/Admin/DashboardPage
 const AdminCreateSupporterPage = React.lazy(() => import("../pages/Admin/AdminCreateSupporterPage"));
 const AdminCreateDoctorPage = React.lazy(() => import("../pages/Admin/AdminCreateDoctorPage"));
 const AdminViewSupporterPage = React.lazy(() => import("../pages/Admin/AdminViewSupporterPage"));
-const AdminUserListPage = React.lazy(() => import("../pages/Admin/AdminUserListPage"));
 const AdminDoctorDetailPage = React.lazy(() => import("../pages/Admin/AdminDoctorDetailPage"));
 const AdminElderlyDetailPage = React.lazy(() => import("../pages/Admin/AdminElderlyDetailPage"));
 const AdminFamilyDetailPage = React.lazy(() => import("../pages/Admin/AdminFamilyDetailPage"));
@@ -24,13 +23,16 @@ const AdminCreatePackagePage = React.lazy(() => import("../pages/Admin/AdminCrea
 const AdminListPackagePage = React.lazy(() => import("../pages/Admin/AdminListHealthPackagePage"));
 const AdminEditPackagePage = React.lazy(() => import("../pages/Admin/AdminEditHealthPackagePage"));
 const AdminPackageDetailPage = React.lazy(() => import("../pages/Admin/AdminHealthPackageDetailPage"));
+const AdminFamilyElderListPage = React.lazy(()=> import("../pages/Admin/AdminFamilyElderListPage"))
+const AdminStaffListPage = React.lazy(()=> import("../pages/Admin/AdminStaffListPage"))
 
 // Supporter Services routes
 // (Add supporter services related pages here when available)
 const AdminListSupporterServices = React.lazy(() => import("../pages/Admin/AdminListSupporterServices"));
 const AdminSupporterServiceDetail = React.lazy(() => import("../pages/Admin/AdminCreateSupporterServices"));
 
-
+const AdminSupporterSchedulingListPage = React.lazy(() => import("../pages/Admin/SupporterSchedulingList"));
+const AdminSupporterSchedulingDetailPage = React.lazy(() => import("../pages/Admin/SupporterSchedulingDetailPage"));
 const AppRoutes = [
 
     // Auth routes
@@ -42,7 +44,6 @@ const AppRoutes = [
     { path: ROUTE_PATH.ADMIN_CREATE_SUPPORTER, page: AdminCreateSupporterPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_CREATE_DOCTOR, page: AdminCreateDoctorPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_DETAIL, page: AdminViewSupporterPage, layout: AdminLayout },
-    { path: ROUTE_PATH.ADMIN_VIEW_USER, page: AdminUserListPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_DOCTOR_DETAIL, page: AdminDoctorDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_ELDERLY_DETAIL, page: AdminElderlyDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_FAMILY_DETAIL, page: AdminFamilyDetailPage, layout: AdminLayout },
@@ -54,10 +55,15 @@ const AppRoutes = [
     { path: ROUTE_PATH.ADMIN_LIST_HEALTH_PACKAGES, page: AdminListPackagePage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_EDIT_HEALTH_PACKAGE, page: AdminEditPackagePage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_HEALTH_PACKAGE_DETAIL, page: AdminPackageDetailPage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_VIEW_USER, page: AdminFamilyElderListPage, layout: AdminLayout},
+    { path: ROUTE_PATH.ADMIN_VIEW_STAFF, page: AdminStaffListPage, layout: AdminLayout},
 
     // Supporter Services routes
     { path: ROUTE_PATH.SUPPORTER_SERVICES, page: AdminListSupporterServices, layout: AdminLayout },
     { path: ROUTE_PATH.SUPPORTER_SERVICE_DETAIL, page: AdminSupporterServiceDetail, layout: AdminLayout },
-]
+
+    { path: ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_LIST, page: AdminSupporterSchedulingListPage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL, page: AdminSupporterSchedulingDetailPage, layout: AdminLayout },
+];
 
 export default AppRoutes;

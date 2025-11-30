@@ -1,10 +1,3 @@
-// Admin: Lấy chi tiết 1 đăng ký gói khám
-export const getRegisteredPackageById = async (id) => {
-  const { data } = await axios.get(`${ADMIN_API_BASE}/registered-packages/${id}`, {
-    headers: { ...getAuthHeader() },
-  });
-  return data;
-};
 import axios from "axios";
 
 import API_BASE_URL from "../config/api";
@@ -19,7 +12,20 @@ const getAuthHeader = () => {
                 localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
-
+// Admin: Lấy danh sách mối quan hệ đã liên kết (elderly) theo familyId (dành cho admin)
+export const getAcceptRelationshipByFamilyIdAdmin = async (familyId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/relationship/accepted-family/${familyId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+// Admin: Lấy chi tiết 1 đăng ký gói khám
+export const getRegisteredPackageById = async (id) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/registered-packages/${id}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
 // Admin: Tạo tài khoản supporter mới
 export const createSupporter = async (payload) => {
   // expected payload: { fullName, phoneNumber, gender, password, email? }
@@ -155,6 +161,22 @@ export const checkAdminAccess = () => {
     return false;
   }
 };
+// Admin: Lấy danh sách lịch hẹn supporter theo status
+export const getSupporterSchedulesByStatus = async (status) => {
+  const params = status ? { status } : {};
+  const query = new URLSearchParams(params).toString();
+  const url = query ? `${ADMIN_API_BASE}/supporter-schedules?${query}` : `${ADMIN_API_BASE}/supporter-schedules`;
+  const { data } = await axios.get(url, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+export const getPackagesByDoctor = async (doctorId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/package/${doctorId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
 
 // Utility: Format dữ liệu supporter cho hiển thị
 export const formatSupporterData = (supporterData) => {
@@ -235,6 +257,8 @@ export const validateSupporterData = (data) => {
 };
 
 const adminService = {
+  getPackagesByDoctor,
+  getSupporterSchedulesByStatus,
   createSupporter,
   createDoctor,
   getSupporterProfile,

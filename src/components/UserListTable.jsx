@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import adminService from "../../services/adminService";
+import adminService from "../services/adminService";
 
 // Helper function to get details based on role
 const getDetailsByRole = (user) => {
@@ -29,7 +29,12 @@ const roleLabel = (role) => {
   }
 };
 
-const AdminUserListPage = () => {
+const UserListTable = ({
+  filterRoles = [],
+  title = "Danh Sách Người Dùng",
+  description = "Quản Lý Người Dùng Trong Hệ Thống",
+  showAddButtons = false,
+}) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,24 +46,9 @@ const AdminUserListPage = () => {
     const fetchUsers = async () => {
       try {
         const res = await adminService.getAllUsers();
-        console.log("🔍 AdminUserListPage - Raw API response:", res);
         const data = res?.data || [];
-        console.log("🔍 AdminUserListPage - Users data:", data);
-        
         const mapped = data
-          .map((u) => {
-          console.log("🔍 AdminUserListPage - Processing user:", {
-            id: u._id || u.id,
-            fullName: u.fullName,
-            email: u.email,
-            phoneNumber: u.phoneNumber,
-            address: u.address,
-            emailEnc: u.emailEnc,
-            phoneNumberEnc: u.phoneNumberEnc,
-            addressEnc: u.addressEnc
-          });
-          
-          return {
+          .map((u) => ({
             id: u._id || u.id,
             fullName: u.fullName,
             role: u.role,
@@ -68,17 +58,11 @@ const AdminUserListPage = () => {
             address: u.address || "N/A",
             createdAt: u.createdAt,
             gender: u.gender,
-            // Add details based on role
             details: getDetailsByRole(u),
-          };
-          })
-          // Exclude admin accounts from the list shown in UI
+          }))
           .filter((u) => u && u.role !== "admin");
-        
-        console.log("🔍 AdminUserListPage - Mapped users:", mapped);
         setUsers(mapped);
       } catch (e) {
-        console.error("❌ AdminUserListPage - Error:", e);
         setError(
           e?.response?.data?.message || "Tải danh sách người dùng thất bại"
         );
@@ -86,13 +70,14 @@ const AdminUserListPage = () => {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, []);
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
-      const okRole = roleFilter === "all" || u.role === roleFilter;
+      const okRole =
+        (filterRoles.length === 0 || filterRoles.includes(u.role)) &&
+        (roleFilter === "all" || u.role === roleFilter);
       const okStatus =
         statusFilter === "all" ||
         (statusFilter === "active" ? u.isActive : !u.isActive);
@@ -106,117 +91,38 @@ const AdminUserListPage = () => {
         (u.details || "").toLowerCase().includes(q);
       return okRole && okStatus && okSearch;
     });
-  }, [users, roleFilter, statusFilter, search]);
-
-  // Calculate summary statistics
-  const stats = useMemo(() => {
-    return {
-      totalResidents: users.filter((u) => u.role === "elderly").length,
-      activeStaff: users.filter((u) => u.role === "supporter" && u.isActive)
-        .length,
-      familyMembers: users.filter((u) => u.role === "family").length,
-      doctors: users.filter((u) => u.role === "doctor").length,
-    };
-  }, [users]);
+  }, [users, filterRoles, roleFilter, statusFilter, search]);
 
   if (loading) return <div className="p-4">Đang tải...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Danh Sách Người Dùng</h2>
-            <p className="text-gray-600 mt-1">
-              Quản Lý Người Dùng Trong Hệ Thống
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+            <p className="text-gray-600 mt-1">{description}</p>
           </div>
-          <div className="flex space-x-3">
-            <Link
-              to="/admin/supporters/create"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
-            >
-              <span>+</span>
-              <span>Thêm Cộng Tác Viên</span>
-            </Link>
-            <Link
-              to="/admin/doctors/create"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-            >
-              <span>+</span>
-              <span>Thêm Bác Sĩ</span>
-            </Link>
-          </div>
+          {showAddButtons && (
+            <div className="flex space-x-3">
+              <Link
+                to="/admin/supporters/create"
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+              >
+                <span>+</span>
+                <span>Thêm Cộng Tác Viên</span>
+              </Link>
+              <Link
+                to="/admin/doctors/create"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+              >
+                <span>+</span>
+                <span>Thêm Bác Sĩ</span>
+              </Link>
+            </div>
+          )}
         </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-blue-600 text-xl">👥</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Người Cao Tuổi
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.totalResidents}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-purple-600 text-xl">👥</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Thành Viên Gia Đình
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.familyMembers}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-green-600 text-xl">👥</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Cộng Tác Viên
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.activeStaff}
-                </p>
-              </div>
-            </div>
-          </div>       
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <span className="text-orange-600 text-xl">👥</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Bác Sĩ
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.doctors}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Search and Filter */}
         <div className="bg-white rounded-xl p-6 shadow-sm border mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
@@ -240,10 +146,10 @@ const AdminUserListPage = () => {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Lọc Theo Vai Trò</option>
-                <option value="elderly">Người Cao Tuổi</option>
-                <option value="supporter">Cộng Tác Viên</option>
-                <option value="family">Thành Viên Gia Đình</option>
-                <option value="doctor">Bác Sĩ</option>
+                {filterRoles.includes("elderly") && <option value="elderly">Người Cao Tuổi</option>}
+                {filterRoles.includes("supporter") && <option value="supporter">Cộng Tác Viên</option>}
+                {filterRoles.includes("family") && <option value="family">Thành Viên Gia Đình</option>}
+                {filterRoles.includes("doctor") && <option value="doctor">Bác Sĩ</option>}
               </select>
               <select
                 value={statusFilter}
@@ -257,8 +163,6 @@ const AdminUserListPage = () => {
             </div>
           </div>
         </div>
-
-        {/* User Directory */}
         <div className="bg-white rounded-xl shadow-sm border">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -268,10 +172,9 @@ const AdminUserListPage = () => {
               Danh sách đầy đủ tất cả người dùng trong hệ thống
             </p>
           </div>
-
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              No users found matching your criteria
+              Không có người dùng phù hợp
             </div>
           ) : (
             <div>
@@ -403,4 +306,4 @@ const AdminUserListPage = () => {
   );
 };
 
-export default AdminUserListPage;
+export default UserListTable;
