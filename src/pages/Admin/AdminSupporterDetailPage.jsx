@@ -31,7 +31,7 @@ const AdminViewSupporterPage = () => {
     setLoading(true);
     setMessage("");
     try {
-      const res = await adminService.setSupporterActive(userId, !data.isActive);
+      const res = await adminService.setUserActive(userId, !data.isActive);
       setMessage(res?.message || (data.isActive ? "Đã khóa tài khoản" : "Đã mở khóa tài khoản"));
       // Update local data
       setData({ ...data, isActive: !data.isActive });

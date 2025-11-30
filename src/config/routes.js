@@ -12,7 +12,7 @@ const RegisteredPackagesPage = React.lazy(() => import("../pages/Admin/Registere
 const AdminDashboardPage = React.lazy(() => import("../pages/Admin/DashboardPage"));
 const AdminCreateSupporterPage = React.lazy(() => import("../pages/Admin/AdminCreateSupporterPage"));
 const AdminCreateDoctorPage = React.lazy(() => import("../pages/Admin/AdminCreateDoctorPage"));
-const AdminViewSupporterPage = React.lazy(() => import("../pages/Admin/AdminViewSupporterPage"));
+const AdminSupporterDetailPage = React.lazy(() => import("../pages/Admin/AdminSupporterDetailPage"));
 const AdminDoctorDetailPage = React.lazy(() => import("../pages/Admin/AdminDoctorDetailPage"));
 const AdminElderlyDetailPage = React.lazy(() => import("../pages/Admin/AdminElderlyDetailPage"));
 const AdminFamilyDetailPage = React.lazy(() => import("../pages/Admin/AdminFamilyDetailPage"));
@@ -43,7 +43,7 @@ const AppRoutes = [
     { path: ROUTE_PATH.DASHBOARD, page: AdminDashboardPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_CREATE_SUPPORTER, page: AdminCreateSupporterPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_CREATE_DOCTOR, page: AdminCreateDoctorPage, layout: AdminLayout },
-    { path: ROUTE_PATH.ADMIN_VIEW_DETAIL, page: AdminViewSupporterPage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_VIEW_SUPPORTER_DETAIL, page: AdminSupporterDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_DOCTOR_DETAIL, page: AdminDoctorDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_ELDERLY_DETAIL, page: AdminElderlyDetailPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_VIEW_FAMILY_DETAIL, page: AdminFamilyDetailPage, layout: AdminLayout },

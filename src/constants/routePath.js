@@ -10,14 +10,17 @@ const ROUTE_PATH = {
   DASHBOARD: '/admin/dashboard',
   ADMIN_CREATE_SUPPORTER: '/admin/supporters/create',
   ADMIN_CREATE_DOCTOR: '/admin/doctors/create',
-  ADMIN_VIEW_DETAIL: '/admin/supporters/view',
 
+  ADMIN_VIEW_SUPPORTER_DETAIL: '/admin/supporters/view',
   ADMIN_VIEW_DOCTOR_DETAIL: '/admin/doctors/view',
   ADMIN_VIEW_ELDERLY_DETAIL: '/admin/elderly/view',
   ADMIN_VIEW_FAMILY_DETAIL: '/admin/family/view',
-  ADMIN_REGISTERED_PACKAGES: '/admin/registered-packages',
+
+
   ADMIN_BULK_IMPORT_DOCTORS: '/admin/doctors/import',
   ADMIN_BULK_IMPORT_SUPPORTERS: '/admin/supporters/import',
+
+  ADMIN_REGISTERED_PACKAGES: '/admin/registered-packages',
   ADMIN_DETAIL_REGISTERED_PACKAGE:'/admin/registered-packages/:id',
   ADMIN_CREATE_HEALTH_PACKAGE: '/admin/health-packages/create',
   ADMIN_LIST_HEALTH_PACKAGES: '/admin/health-packages',
