@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin, Search, Users, Phone, Clock, Navigation } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -102,6 +103,7 @@ function MapAutoZoom({ elderlyWithLocation }) {
 }
 
 function AdminElderlyLocationPage() {
+  const navigate = useNavigate();
   const [elderlyList, setElderlyList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -285,45 +287,13 @@ function AdminElderlyLocationPage() {
                         key={elderly.userId}
                         position={[lat, lng]}
                         icon={createCustomMarker(elderly)}
+                        eventHandlers={{
+                          click: () => {
+                            navigate(`/admin/elderly/view?id=${elderly._id}`);
+                          }
+                        }}
                       >
-                        <Popup>
-                          <div className="p-2" style={{ minWidth: '200px' }}>
-                            <div className="flex items-center gap-3 mb-3">
-                              <img 
-                                src={elderly.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(elderly.fullName || 'User')}&background=2196F3&color=fff&size=80`}
-                                alt={elderly.fullName}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
-                                onError={(e) => {
-                                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(elderly.fullName || 'User')}&background=2196F3&color=fff&size=80`;
-                                }}
-                              />
-                              <div>
-                                <h3 className="font-semibold text-gray-900 text-base">
-                                  {elderly.fullName || "N/A"}
-                                </h3>
-                                <p className="text-xs text-gray-500">ID: {elderly.userId}</p>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-sm text-gray-600">
-                                <strong>📞 SĐT:</strong> {elderly.phoneNumber || "N/A"}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                <strong>📍 Địa chỉ:</strong>{" "}
-                                {elderly.currentLocation?.address || "N/A"}
-                              </p>
-                              <p className="text-xs text-gray-500 font-mono">
-                                Tọa độ: {lat.toFixed(6)}, {lng.toFixed(6)}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => setSelectedElderly(elderly)}
-                              className="mt-3 w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition font-medium"
-                            >
-                              Xem chi tiết đầy đủ
-                            </button>
-                          </div>
-                        </Popup>
+                        
                       </Marker>
                     );
                   })}
