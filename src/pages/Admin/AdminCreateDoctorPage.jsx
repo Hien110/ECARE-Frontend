@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import adminService from "../../services/adminService";
-import addressData from "vietnam-address-database";
+import $ from "jquery";
 import BulkImportDoctors from "../Admin/BulkImportDoctorPage";
 
 const AdminCreateDoctorPage = () => {
@@ -15,7 +15,7 @@ const AdminCreateDoctorPage = () => {
     address: "",
     password: "",
     confirmPassword: "",
-    identityCard: ""
+    identityCard: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -25,42 +25,57 @@ const AdminCreateDoctorPage = () => {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedWard, setSelectedWard] = useState(null);
   const [detailedAddress, setDetailedAddress] = useState("");
-  const [provinces, setProvinces] = useState([]);
-  const [wards, setWards] = useState([]);
 
   // Sync address fields into formData.address
-  useEffect(() => {
+ useEffect(() => {
     setFormData(prev => ({
       ...prev,
       address: [detailedAddress, selectedWard?.name, selectedProvince?.name].filter(Boolean).join(', ')
     }));
   }, [detailedAddress, selectedWard, selectedProvince]);
 
-  // Load provinces from local JSON
-  useEffect(() => {
-    // addressData is an array with tables: provinces and wards
-    const provincesTable = addressData.find(t => t.name === "provinces");
-    setProvinces(provincesTable?.data || []);
-  }, []);
+  // Load provinces & wards via jQuery
+   useEffect(() => {
+    $(document).ready(function () {
+      $.getJSON('https://esgoo.net/api-tinhthanh-new/1/0.htm', function (data_tinh) {
+        if (data_tinh.error === 0) {
+          $("#tinh").html('<option value="0">Tỉnh Thành</option>');
+          $.each(data_tinh.data, function (_, val_tinh) {
+            $("#tinh").append('<option value="' + val_tinh.id + '">' + val_tinh.full_name + '</option>');
+          });
 
-  // Update wards when province changes
-  useEffect(() => {
-    if (selectedProvince) {
-      const wardsTable = addressData.find(t => t.name === "wards");
-      setWards((wardsTable?.data || []).filter(w => w.province_code === selectedProvince.province_code));
-    } else {
-      setWards([]);
-    }
-    setSelectedWard(null);
-  }, [selectedProvince]);
+          $("#tinh").change(function () {
+            const idtinh = $(this).val();
+            const option = this.options[this.selectedIndex];
+            setSelectedProvince({ id: idtinh, name: option ? option.text : '' });
+
+            $.getJSON('https://esgoo.net/api-tinhthanh-new/2/' + idtinh + '.htm', function (data_quan) {
+              if (data_quan.error === 0) {
+                $("#quan").html('<option value="0">Phường Xã</option>');
+                $.each(data_quan.data, function (_, val_quan) {
+                  $("#quan").append('<option value="' + val_quan.id + '">' + val_quan.full_name + '</option>');
+                });
+              }
+            });
+          });
+
+          $(document).on('change', '#quan', function () {
+            const option = this.options[this.selectedIndex];
+            const id = this.value;
+            setSelectedWard({ id, name: option ? option.text : '' });
+          });
+        }
+      });
+    });
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleGenderChange = (gender) => {
-    setFormData(prev => ({ ...prev, gender }));
+    setFormData((prev) => ({ ...prev, gender }));
   };
 
   const validateForm = () => {
@@ -81,8 +96,10 @@ const AdminCreateDoctorPage = () => {
       if (age > 70) errors.push("Tuổi không hợp lệ");
     }
     if (!formData.password) errors.push("Mật khẩu là bắt buộc");
-    else if (formData.password.length < 6) errors.push("Mật khẩu phải có ít nhất 6 ký tự");
-    if (formData.password !== formData.confirmPassword) errors.push("Mật khẩu xác nhận không khớp");
+    else if (formData.password.length < 6)
+      errors.push("Mật khẩu phải có ít nhất 6 ký tự");
+    if (formData.password !== formData.confirmPassword)
+      errors.push("Mật khẩu xác nhận không khớp");
     if (!formData.address.trim()) errors.push("Địa chỉ đầy đủ là bắt buộc");
     return errors;
   };
@@ -106,7 +123,7 @@ const AdminCreateDoctorPage = () => {
         dateOfBirth: formData.dateOfBirth,
         address: formData.address.trim(),
         password: formData.password,
-        identityCard: formData.identityCard.trim()
+        identityCard: formData.identityCard.trim(),
       };
 
       const res = await adminService.createDoctor(payload);
@@ -122,16 +139,20 @@ const AdminCreateDoctorPage = () => {
         address: "",
         password: "",
         confirmPassword: "",
-        identityCard: ""
+        identityCard: "",
       });
       setSelectedProvince(null);
       setSelectedWard(null);
       setDetailedAddress("");
+      $("#tinh").val("0");
+      $("#quan").html('<option value="0">Phường Xã</option>');
 
       // Redirect after 2 seconds
       setTimeout(() => navigate("/admin/users"), 2000);
     } catch (err) {
-      setMessage(err?.response?.data?.message || "Đã xảy ra lỗi khi tạo tài khoản bác sĩ");
+      setMessage(
+        err?.response?.data?.message || "Đã xảy ra lỗi khi tạo tài khoản bác sĩ"
+      );
     } finally {
       setLoading(false);
     }
@@ -150,13 +171,23 @@ const AdminCreateDoctorPage = () => {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tạo tài khoản Doctor</h1>
-          <p className="text-gray-600">Thêm doctor mới vào hệ thống chăm sóc sức khỏe</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Tạo tài khoản Doctor
+          </h1>
+          <p className="text-gray-600">
+            Thêm doctor mới vào hệ thống chăm sóc sức khỏe
+          </p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">
           {message && (
-            <div className={`mb-6 p-4 rounded-lg ${message.includes("thành công") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            <div
+              className={`mb-6 p-4 rounded-lg ${
+                message.includes("thành công")
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}
+            >
               {message}
             </div>
           )}
@@ -200,14 +231,20 @@ const AdminCreateDoctorPage = () => {
                     Giới tính <span className="text-red-500">*</span>
                   </label>
                   <div className="flex space-x-4">
-                    {["female", "male"].map(gender => (
+                    {["female", "male"].map((gender) => (
                       <button
                         key={gender}
                         type="button"
                         onClick={() => handleGenderChange(gender)}
-                        className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-2 transition-colors ${formData.gender === gender ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-300 hover:border-gray-400"}`}
+                        className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                          formData.gender === gender
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
                       >
-                        <span className="text-lg">{gender === "female" ? "♀" : "♂"}</span>
+                        <span className="text-lg">
+                          {gender === "female" ? "♀" : "♂"}
+                        </span>
                         <span>{gender === "female" ? "Nữ" : "Nam"}</span>
                       </button>
                     ))}
@@ -220,7 +257,9 @@ const AdminCreateDoctorPage = () => {
                     Địa chỉ <span className="text-red-500">*</span>
                   </label>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ chi tiết</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Địa chỉ chi tiết
+                    </label>
                     <input
                       type="text"
                       value={detailedAddress}
@@ -231,45 +270,32 @@ const AdminCreateDoctorPage = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Tỉnh/Thành phố</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tỉnh/Thành phố
+                      </label>
                       <select
+                        id="tinh"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        value={selectedProvince?.province_code || ""}
-                        onChange={e => {
-                          const code = e.target.value;
-                          const province = provinces.find(p => p.province_code === code);
-                          setSelectedProvince(province || null);
-                        }}
-                      >
-                        <option value="">Chọn tỉnh/thành phố</option>
-                        {provinces.map(province => (
-                          <option key={province.province_code} value={province.province_code}>{province.name}</option>
-                        ))}
-                      </select>
+                      ></select>
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phường/Xã</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phường/Xã
+                      </label>
                       <select
+                        id="quan"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        value={selectedWard?.ward_code || ""}
-                        onChange={e => {
-                          const code = e.target.value;
-                          const ward = wards.find(w => w.ward_code === code);
-                          setSelectedWard(ward || null);
-                        }}
-                        disabled={!selectedProvince}
-                      >
-                        <option value="">{selectedProvince ? "Chọn phường/xã" : "Chọn tỉnh trước"}</option>
-                        {wards.map(ward => (
-                          <option key={ward.ward_code} value={ward.ward_code}>{ward.name}</option>
-                        ))}
-                      </select>
+                      ></select>
                     </div>
                   </div>
                   {(selectedProvince || selectedWard || detailedAddress) && (
                     <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <h4 className="text-sm font-medium text-blue-900 mb-2">Địa chỉ đã chọn:</h4>
-                      <p className="text-sm text-blue-800">{formData.address}</p>
+                      <h4 className="text-sm font-medium text-blue-900 mb-2">
+                        Địa chỉ đã chọn:
+                      </h4>
+                      <p className="text-sm text-blue-800">
+                        {formData.address}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -278,7 +304,9 @@ const AdminCreateDoctorPage = () => {
               {/* Right Column */}
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -290,7 +318,9 @@ const AdminCreateDoctorPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Ngày sinh</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ngày sinh
+                  </label>
                   <input
                     type="date"
                     name="dateOfBirth"
@@ -301,7 +331,9 @@ const AdminCreateDoctorPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mật khẩu
+                  </label>
                   <input
                     type="password"
                     name="password"
@@ -313,7 +345,9 @@ const AdminCreateDoctorPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Xác nhận mật khẩu</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Xác nhận mật khẩu
+                  </label>
                   <input
                     type="password"
                     name="confirmPassword"
@@ -325,7 +359,9 @@ const AdminCreateDoctorPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Căn cước công dân</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Căn cước công dân
+                  </label>
                   <input
                     type="text"
                     name="identityCard"

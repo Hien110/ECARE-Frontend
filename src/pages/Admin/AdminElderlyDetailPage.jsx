@@ -107,6 +107,7 @@ const AdminElderlyDetailPage = () => {
   const phone = data.phoneNumber || "N/A";
   const email = data.email || "N/A";
   const address = data.address || "N/A";
+  const currentAddress = data.currentAddress || "N/A";
   const dob = data.dateOfBirth ? formatDate(data.dateOfBirth) : "N/A";
   const age = data.dateOfBirth
     ? Math.max(
@@ -271,6 +272,7 @@ const AdminElderlyDetailPage = () => {
                     </div>
                   </div>
 
+
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
                     <div className="p-3 rounded-lg bg-pink-100 text-pink-600 flex-shrink-0">
                       <svg
@@ -293,6 +295,23 @@ const AdminElderlyDetailPage = () => {
                       </div>
                       <div className="font-semibold text-gray-900 mt-1 line-clamp-2">
                         {address}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Địa chỉ tạm trú */}
+                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
+                    <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600 flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A2 2 0 013 15.382V6a2 2 0 012-2h14a2 2 0 012 2v9.382a2 2 0 01-1.553 1.894L15 20a2 2 0 01-2 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Địa chỉ tạm trú
+                      </div>
+                      <div className="font-semibold text-gray-900 mt-1 line-clamp-2">
+                        {currentAddress}
                       </div>
                     </div>
                   </div>
