@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import adminService, { getSupporterSchedulesByStatus } from '../../services/adminService';
+import adminService, { getSupporterSchedulesByStatus, getRegisteredPackages } from '../../services/adminService';
 import  {getHealthPackages} from '@/services/healthPackageService';
 
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [packages, setPackages] = useState([]);
-  const [error, setError] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month (1-12)
+  const [registeredPackages, setRegisteredPackages] = useState([]);
+  const [supporterSchedules, setSupporterSchedules] = useState([]);
   const [stats, setStats] = useState({
     counts: { totalResidents: 0, familyMembers: 0, activeSupporters: 0, doctors: 0, admins: 0 },
     paymentsByStatus: {},
@@ -15,6 +17,29 @@ const DashboardPage = () => {
   const [supporterCompleted, setSupporterCompleted] = useState(0);
   const [supporterCanceled, setSupporterCanceled] = useState(0);
 
+  // Fetch registered packages và supporter schedules
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch all registered packages (with high limit to get all)
+        const registeredRes = await getRegisteredPackages({ page: 1, limit: 1000 });
+        if (registeredRes && registeredRes.success && registeredRes.data) {
+          const items = registeredRes.data.items || [];
+          setRegisteredPackages(items);
+        }
+
+        // Fetch all completed supporter schedules
+        const schedulesRes = await getSupporterSchedulesByStatus('completed');
+        if (schedulesRes && schedulesRes.success && Array.isArray(schedulesRes.data)) {
+          setSupporterSchedules(schedulesRes.data);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    };
+    fetchData();
+  }, []);
+
   useEffect(() => {
     const fetchPackages = async () => {
       try {
@@ -23,7 +48,6 @@ const DashboardPage = () => {
         else if (Array.isArray(res?.data)) setPackages(res.data);
         else setPackages([]);
       } catch (err) {
-        setError(err?.message || 'Lỗi khi lấy danh sách gói khám');
         console.error('[v0] Error fetching health packages:', err);
       } finally {
         setLoading(false);
@@ -53,6 +77,50 @@ const DashboardPage = () => {
       })
       .catch(() => setSupporterCanceled(0));
   }, []);
+
+  // Filter data by selected month
+  const filterByMonth = (items, dateField) => {
+    if (!items || !Array.isArray(items)) return [];
+    if (!selectedMonth || selectedMonth === 0) return items;
+    
+    const currentYear = new Date().getFullYear();
+    return items.filter(item => {
+      if (!item) return false;
+      // For supporter schedules, use scheduleDate if available, otherwise createdAt
+      const dateValue = item[dateField] || (dateField === 'scheduleDate' ? item.createdAt : null);
+      if (!dateValue) return false;
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return false;
+      return date.getMonth() + 1 === selectedMonth && date.getFullYear() === currentYear;
+    });
+  };
+
+  // Get filtered data
+  const filteredRegisteredPackages = filterByMonth(registeredPackages, 'registeredAt');
+  const filteredSupporterSchedules = filterByMonth(supporterSchedules, 'scheduleDate');
+  
+  // Count registered packages with doctors
+  const registeredPackagesWithDoctors = filteredRegisteredPackages.filter(pkg => pkg.doctor).length;
+  
+  // Count completed supporter schedules
+  const completedSupporterSchedules = filteredSupporterSchedules.length;
+
+  // 2-column chart data for selected month
+  const chartColumns = [
+    {
+      id: 'packages',
+      label: 'Gói khám đã đặt',
+      count: registeredPackagesWithDoctors,
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'supporter',
+      label: 'Lịch hẹn supporter hoàn thành',
+      count: completedSupporterSchedules,
+      color: 'bg-green-500'
+    }
+  ];
+  const maxColumnValue = Math.max(...chartColumns.map(col => col.count), 1);
   useEffect(() => {
     let mounted = true;
     const fetchDashboard = async () => {
@@ -73,7 +141,7 @@ const DashboardPage = () => {
 
   if (loading) return <div className="p-6">Đang tải dashboard...</div>;
 
-  const { counts, paymentsByStatus, totalRevenue, monthlyRevenue } = stats;
+  const { counts, paymentsByStatus, monthlyRevenue } = stats;
 
   // Đếm số lượng gói khám đang active
   const activeHealthPackages = packages.filter(pkg => pkg.isActive).length;
@@ -90,75 +158,46 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Revenue Chart - Takes 2 columns on large screens */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Hồ sơ doanh thu hàng tháng</h3>
-              <p className="text-sm text-gray-500">Theo dõi doanh thu của cơ sở chăm sóc người cao tuổi</p>
+              <h3 className="text-lg font-semibold text-gray-900">Hồ sơ doanh thu theo tháng</h3>
+              <p className="text-sm text-gray-500">Thống kê số lượng dịch vụ đã đăng ký và lịch hẹn với cộng tác viên </p>
             </div>
-            <div className="flex space-x-1">
-              <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Chart (static placeholder) */}
-          <div className="relative h-64 mb-6">
-            <div className="absolute inset-0 flex items-end justify-between px-4">
-              {/* Chart bars - still static for now */}
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-16 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 1</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-20 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 2</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-32 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 3</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 4</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-28 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 5</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-24 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 6</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-36 bg-blue-500 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 7</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-18 bg-gray-300 rounded-t mb-2"></div>
-                <span className="text-xs text-gray-500 transform -rotate-45">Tháng 8</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <label htmlFor="month-filter" className="text-sm font-medium text-gray-600">Lọc theo tháng</label>
+              <select
+                id="month-filter"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              >
+                <option value={0}>Tất cả</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => (
+                  <option key={month} value={month}>Tháng {month}</option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Chưa Xử Lý</div>
-              <div className="text-xl font-bold text-orange-600">{(paymentsByStatus?.pending?.total ?? 0).toLocaleString()} VND</div>
+          <div className="mt-6">
+            <div className="h-64 flex items-end justify-around px-6">
+              {chartColumns.map(({ id, label, count, color }) => (
+                <div key={id} className="flex flex-col items-center flex-1 max-w-[180px]">
+                  <div
+                    className={`w-16 rounded-t transition-all duration-300 ${color}`}
+                    style={{
+                      height: `${(count / maxColumnValue) * 100}%`,
+                      minHeight: count > 0 ? '16px' : '4px'
+                    }}
+                  ></div>
+                  <div className="text-sm font-semibold text-gray-800 mt-3 text-center">{label}</div>
+                  <div className="text-xl font-bold text-gray-900">{count.toLocaleString()}</div>
+                </div>
+              ))}
             </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Đã Hoàn Thành</div>
-              <div className="text-xl font-bold text-green-600">{(paymentsByStatus?.completed?.total ?? 0).toLocaleString()} VND</div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Đã Từ Chối</div>
-              <div className="text-xl font-bold text-red-600">{(paymentsByStatus?.failed?.total ?? 0).toLocaleString()} VND</div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">Doanh Thu</div>
-              <div className="text-xl font-bold text-blue-600">{(totalRevenue ?? 0).toLocaleString()} VND</div>
-            </div>
+            <p className="text-sm text-gray-500 text-center mt-4">
+              Số liệu {selectedMonth ? `tháng ${selectedMonth}` : 'tất cả tháng'} - {new Date().getFullYear()}
+            </p>
           </div>
         </div>
 
@@ -222,7 +261,6 @@ const DashboardPage = () => {
                 <div className="text-right">
                   <div className="font-bold text-gray-900" style={{ fontSize: '2rem' }}>{supporterCompleted + supporterCanceled}</div>
                   <div className="text-sm text-green-600">{supporterCompleted} đã hoàn thành</div>
-                  <div className="text-sm text-red-600">{supporterCanceled} đã hủy</div>
                 </div>
               </div>
             </div>

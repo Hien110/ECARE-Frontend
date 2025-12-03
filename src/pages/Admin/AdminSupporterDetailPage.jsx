@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import adminService from "../../services/adminService";
+import { useSearchParams, Link } from "react-router-dom";
+import adminService, { getSupporterSchedulesByStatus } from "../../services/adminService";
+import ROUTE_PATH from "../../constants/routePath";
 
 const AdminViewSupporterPage = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +10,8 @@ const AdminViewSupporterPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [supporterSchedules, setSupporterSchedules] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(true);
 
   console.log('AdminViewSupporterPage rendered with userId:', userId);
 
@@ -23,7 +26,31 @@ const AdminViewSupporterPage = () => {
         setError(e?.response?.data?.message || "Tải hồ sơ thất bại");
       }
     };
-    run();
+    if (userId) run();
+  }, [userId]);
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      setScheduleLoading(true);
+      try {
+        const res = await getSupporterSchedulesByStatus();
+        if (res && res.success && Array.isArray(res.data)) {
+          const filtered = res.data.filter((item) => {
+            const supporterId = item.supporter?._id || item.supporter;
+            return supporterId && String(supporterId) === String(userId);
+          });
+          setSupporterSchedules(filtered);
+        } else {
+          setSupporterSchedules([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch supporter schedules", err);
+        setSupporterSchedules([]);
+      } finally {
+        setScheduleLoading(false);
+      }
+    };
+    if (userId) fetchSchedules();
   }, [userId]);
 
   // Function to toggle account lock status
@@ -79,20 +106,8 @@ const AdminViewSupporterPage = () => {
 
   // Derived values (use model fields when available, otherwise fallbacks)
   const specialty = data.specialty || (data.specialties && data.specialties[0]) || 'Chăm sóc người cao tuổi';
-  const totalCustomers = data.ratingStats?.totalCustomers ?? data.ratingStats?.totalPatients ?? data.ratingStats?.totalRatings ?? 0;
-  const servicesCompleted = data.stats?.servicesCompleted ?? data.servicesCompleted ?? 0;
-  const cancellations = data.stats?.cancellations ?? data.cancellations ?? 0;
-  const servicesOffered = data.servicesOffered ?? data.services ?? data.providedServices ?? [
-    'Chăm sóc cá nhân',
-    'Đồng hành tâm lý',
-    'Hỗ trợ y tế cơ bản',
-    'Hỗ trợ vận động'
-  ];
-  const certifications = data.certifications ?? data.certificates ?? data.trainingRecords ?? [
-    'Chứng chỉ Chăm sóc người cao tuổi - Trường Cao đẳng Y tế (2016)',
-    'Chứng chỉ Sơ cấp cứu - Hội Chữ thập đỏ (2020)',
-    'Chứng chỉ Tâm lý học ứng dụng - Đại học Tâm lý (2022)'
-  ];
+  const supporterCompletedCount = supporterSchedules.filter((sch) => sch.status === "completed").length;
+  const supporterCanceledCount = supporterSchedules.filter((sch) => sch.status === "canceled" || sch.status === "cancelled").length;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -143,10 +158,7 @@ const AdminViewSupporterPage = () => {
                       <span>{data.ratingStats?.averageRating || 0} ({data.ratingStats?.totalRatings || 0} đánh giá)</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                      </svg>
-                      <span>{totalCustomers} khách hàng</span>
+
                     </div>
                   </div>
                 </div>
@@ -169,7 +181,7 @@ const AdminViewSupporterPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Số điện thoại</p>
-                    <p className="font-medium text-gray-900">{data.phoneNumber || 'N/A'}</p>
+                    <p className="font-medium text-gray-900">+{data.phoneNumber || 'N/A'}</p>
                   </div>
                 </div>
 
@@ -263,7 +275,7 @@ const AdminViewSupporterPage = () => {
             {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">{servicesCompleted}</div>
+                <div className="text-2xl font-bold text-green-600 mb-1">{supporterCompletedCount}</div>
                   <div className="text-sm text-gray-600">Dịch vụ hoàn thành</div>
                 <div className="flex justify-end mt-2">
                   <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,7 +284,7 @@ const AdminViewSupporterPage = () => {
                 </div>
               </div>
               <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-                <div className="text-2xl font-bold text-red-600 mb-1">{cancellations}</div>
+                <div className="text-2xl font-bold text-red-600 mb-1">{supporterCanceledCount}</div>
                   <div className="text-sm text-gray-600">Lịch hủy</div>
                 <div className="flex justify-end mt-2">
                   <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,40 +293,100 @@ const AdminViewSupporterPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Services Offered */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dịch vụ cung cấp</h3>
-              <div className="space-y-3">
-                {servicesOffered.map((service, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <span className="text-sm text-gray-700">{service}</span>
-                  </div>
-                ))}
-              </div>
+        {/* Supporter schedules list */}
+        <div className="mt-10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Lịch hẹn của {data.fullName}</h2>
+              <p className="text-gray-600 text-sm">
+                Tổng cộng {supporterSchedules.length} lịch hẹn ({supporterCompletedCount} hoàn thành, {supporterCanceledCount} hủy)
+              </p>
             </div>
-
-            {/* Certifications */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Chứng chỉ & Đào tạo</h3>
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            {scheduleLoading ? (
+              <div className="text-center py-12">
+                <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin mx-auto"></div>
+                <p className="text-gray-600 mt-4">Đang tải lịch hẹn...</p>
+              </div>
+            ) : supporterSchedules.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                Không có lịch hẹn nào cho supporter này.
+              </div>
+            ) : (
               <div className="space-y-4">
-                {certifications.map((cert, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                    </div>
-                    <span className="text-sm text-gray-700 leading-relaxed">{cert}</span>
-                  </div>
-                ))}
+                {supporterSchedules.map((sch) => {
+                  const formatSession = (s) => {
+                    if (s === "morning") return "Buổi sáng";
+                    if (s === "afternoon") return "Buổi chiều";
+                    if (s === "evening") return "Buổi tối";
+                    return s;
+                  };
+                  const formatDate = (date) => (date ? new Date(date).toLocaleDateString("vi-VN") : "N/A");
+                  let timeText = "";
+                  if (sch.bookingType === "session") {
+                    timeText = `${formatDate(sch.scheduleDate)} - ${formatSession(sch.scheduleTime)}`;
+                  } else if (sch.bookingType === "day") {
+                    timeText = `Cả ngày ${formatDate(sch.scheduleDate)}`;
+                  } else if (sch.bookingType === "month") {
+                    timeText = `Tháng: ${formatDate(sch.monthStart)} → ${formatDate(sch.monthEnd)}`;
+                  }
+                  const statusClass =
+                    sch.status === "completed"
+                      ? "bg-green-100 text-green-700"
+                      : sch.status === "canceled"
+                      ? "bg-red-100 text-red-700"
+                      : sch.status === "confirmed"
+                      ? "bg-blue-100 text-blue-700"
+                      : sch.status === "pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-600";
+
+                  return (
+                    <Link
+                      key={sch._id}
+                      to={ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL.replace(":id", sch._id)}
+                      className="block p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-sm transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <div className="text-lg font-semibold text-gray-900">
+                            {sch.elderly?.fullName || "Người cao tuổi"}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">{sch.service?.name || "Dịch vụ hỗ trợ"}</div>
+                          <div className="text-xs text-gray-500 mt-2 flex flex-wrap items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-medium">
+                              {sch.bookingType === "session"
+                                ? "Theo buổi"
+                                : sch.bookingType === "day"
+                                ? "Theo ngày"
+                                : sch.bookingType === "month"
+                                ? "Theo tháng"
+                                : sch.bookingType}
+                            </span>
+                            <span>{timeText}</span>
+                          </div>
+                        </div>
+                        <span className={`px-4 py-1.5 rounded-full text-xs font-semibold ${statusClass}`}>
+                          {sch.status === "pending" && "Chờ xác nhận"}
+                          {sch.status === "confirmed" && "Đã xác nhận"}
+                          {sch.status === "completed" && "Hoàn thành"}
+                          {sch.status === "canceled" && "Đã hủy"}
+                          {sch.status !== "pending" &&
+                            sch.status !== "confirmed" &&
+                            sch.status !== "completed" &&
+                            sch.status !== "canceled" &&
+                            (sch.status || "Không xác định")}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
