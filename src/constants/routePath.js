@@ -29,6 +29,7 @@ const ROUTE_PATH = {
 
   ADMIN_VIEW_USER: '/admin/user',
   ADMIN_VIEW_STAFF: 'admin/staff',
+  ADMIN_ELDERLY_LOCATION: '/admin/elderly-location',
 
   ADMIN_SUPPORTER_SCHEDULING_LIST: '/admin/supporter-schedulings',
   ADMIN_SUPPORTER_SCHEDULING_DETAIL: '/admin/supporter-schedulings/:id',
