@@ -202,7 +202,7 @@ const AdminDoctorDetailPage = () => {
                       </div>
                       <div>
                         <div className="text-xs font-semibold text-slate-500 uppercase">Điện thoại</div>
-                        <div className="font-semibold text-slate-900 mt-1">{phone}</div>
+                        <div className="font-semibold text-slate-900 mt-1">+{phone}</div>
                       </div>
                     </div>
 

@@ -108,7 +108,7 @@ const AdminFamilyDetailPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Điện thoại</div>
-                    <div className="font-semibold text-gray-900 mt-2">{phone}</div>
+                    <div className="font-semibold text-gray-900 mt-2">+{phone}</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</div>
