@@ -19,9 +19,7 @@ const AdminElderlyDetailPage = () => {
   const [registeredPackages, setRegisteredPackages] = useState([]);
   const [supporterSchedules, setSupporterSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState("used"); // "used" | "doctor" | "supporter"
+  const [activeTab, setActiveTab] = useState("used");
 
   useEffect(() => {
     if (!userId) return;
@@ -29,7 +27,6 @@ const AdminElderlyDetailPage = () => {
     setLoadingPackages(true);
     setLoadingSchedules(true);
 
-    // Fetch user info
     adminService
       .getUserById(userId)
       .then((res) => setData(res?.data || null))
@@ -39,7 +36,6 @@ const AdminElderlyDetailPage = () => {
       })
       .finally(() => setLoading(false));
 
-    // Fetch used packages
     getUsedPackagesByBeneficiary(userId)
       .then((res) => {
         if (res.success) setUsedPackages(res.data || []);
@@ -48,7 +44,6 @@ const AdminElderlyDetailPage = () => {
       .catch(() => setUsedPackages([]))
       .finally(() => setLoadingPackages(false));
 
-    // Fetch registered packages
     getRegisteredPackagesByRegistrant(userId)
       .then((res) => {
         if (res.success) setRegisteredPackages(res.data || []);
@@ -56,7 +51,6 @@ const AdminElderlyDetailPage = () => {
       })
       .catch(() => setRegisteredPackages([]));
 
-    // Fetch supporter schedules
     getSupporterSchedulesByElderly(userId)
       .then((res) => {
         if (res.success) setSupporterSchedules(res.data || []);
@@ -66,15 +60,10 @@ const AdminElderlyDetailPage = () => {
       .finally(() => setLoadingSchedules(false));
   }, [userId]);
 
-  // Lấy người đăng ký đầu tiên (nếu có) từ registeredPackages
-  const firstRegistrant =
-    registeredPackages.length > 0 ? registeredPackages[0].registrant : null;
-
   const formatDate = (iso) => {
     if (!iso) return "N/A";
     try {
-      const d = new Date(iso);
-      return d.toLocaleDateString("vi-VN");
+      return new Date(iso).toLocaleDateString("vi-VN");
     } catch {
       return iso;
     }
@@ -97,23 +86,26 @@ const AdminElderlyDetailPage = () => {
   if (!data)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
-        <div className="text-lg font-medium text-gray-700">
-          Không có dữ liệu
-        </div>
+        <div className="text-lg font-medium text-gray-700">Không có dữ liệu</div>
       </div>
     );
 
   const name = data.fullName || "Người dùng";
-  const phone = data.phoneNumber || "N/A";
-  const email = data.email || "N/A";
+  // Thêm +84 nếu là số Việt Nam, giữ N/A nếu không có
+  const formatPhone = (phone) => {
+    if (!phone || phone === "N/A") return "N/A";
+    // Nếu đã có +84 thì giữ nguyên, nếu bắt đầu bằng 84 thì thêm dấu +
+    if (phone.startsWith("+84")) return phone;
+    if (phone.startsWith("84")) return "+" + phone;
+    if (phone.startsWith("0")) return "+84" + phone.slice(1);
+    return phone;
+  };
+  const phone = formatPhone(data.phoneNumber || "N/A");
   const address = data.address || "N/A";
   const currentAddress = data.currentAddress || "N/A";
   const dob = data.dateOfBirth ? formatDate(data.dateOfBirth) : "N/A";
   const age = data.dateOfBirth
-    ? Math.max(
-        0,
-        new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear()
-      )
+    ? Math.max(0, new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear())
     : null;
   const roleLabel =
     data.role === "supporter"
@@ -121,21 +113,18 @@ const AdminElderlyDetailPage = () => {
       : data.role === "doctor"
       ? "Bác sĩ"
       : "Người cao tuổi";
-  // Tính số lượng hoàn thành và hủy dựa trên trạng thái các đơn bác sĩ và supporter
-  const doctorCompleted = registeredPackages.filter(
-    (pkg) => pkg.status === "completed"
-  ).length;
+
+  const doctorCompleted = registeredPackages.filter((pkg) => pkg.status === "completed").length;
   const doctorCancelled = registeredPackages.filter(
     (pkg) => pkg.status === "canceled" || pkg.status === "cancelled"
   ).length;
-  const supporterCompleted = supporterSchedules.filter(
-    (sch) => sch.status === "completed"
-  ).length;
+  const supporterCompleted = supporterSchedules.filter((sch) => sch.status === "completed").length;
   const supporterCancelled = supporterSchedules.filter(
     (sch) => sch.status === "canceled" || sch.status === "cancelled"
   ).length;
   const completedCount = doctorCompleted + supporterCompleted;
   const cancelledCount = doctorCancelled + supporterCancelled;
+
   const emergencyContact = data.emergencyContact || {
     name: data.emergencyName || null,
     phone: data.emergencyPhone || data.emergencyContactPhone || null,
@@ -148,9 +137,7 @@ const AdminElderlyDetailPage = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Chi tiết người cao tuổi
           </h1>
-          <p className="text-gray-600 mt-2">
-            Quản lý thông tin cá nhân và lịch sử dịch vụ
-          </p>
+          <p className="text-gray-600 mt-2">Quản lý thông tin cá nhân và lịch sử dịch vụ</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -161,45 +148,29 @@ const AdminElderlyDetailPage = () => {
               <div className="px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16 mb-6 relative z-10">
                   <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-4xl font-bold text-white shadow-lg border-4 border-white">
-                    {name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join("")}
+                    {name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-3xl font-bold text-gray-900 mt-15">
-                      {name}
-                    </h2>
+                    <h2 className="text-3xl font-bold text-gray-900 mt-15">{name}</h2>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
                       <span className="px-4 py-1.5 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                         {roleLabel}
                       </span>
                       {age !== null && (
-                        <span className="text-sm text-gray-600 font-medium">
-                          {age} tuổi
-                        </span>
+                        <span className="text-sm text-gray-600 font-medium">{age} tuổi</span>
                       )}
-                      {firstRegistrant && (
-                        <span className="px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold">
-                          Người đăng ký: {firstRegistrant.fullName}
-                        </span>
-                      )}
+
                     </div>
                   </div>
                   <div className="flex gap-3 w-full sm:w-auto">
                     <div className="flex-1 sm:flex-none bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 text-center">
-                      <div className="text-sm text-gray-600 font-medium">
-                        Hoàn thành
-                      </div>
+                      <div className="text-sm text-gray-600 font-medium">Hoàn thành</div>
                       <div className="text-2xl font-bold text-green-600 mt-1">
                         {completedCount.toLocaleString()}
                       </div>
                     </div>
                     <div className="flex-1 sm:flex-none bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-red-200 text-center">
-                      <div className="text-sm text-gray-600 font-medium">
-                        Lịch hủy
-                      </div>
+                      <div className="text-sm text-gray-600 font-medium">Lịch hủy</div>
                       <div className="text-2xl font-bold text-red-600 mt-1">
                         {cancelledCount.toLocaleString()}
                       </div>
@@ -208,102 +179,70 @@ const AdminElderlyDetailPage = () => {
                 </div>
 
                 {data.description && (
-                  <p className="text-gray-700 leading-relaxed mb-6">
-                    {data.description}
-                  </p>
+                  <p className="text-gray-700 leading-relaxed mb-6">{data.description}</p>
                 )}
 
+                {/* Grid thông tin - đã bỏ Email, đưa Liên hệ khẩn cấp lên vị trí thứ 2 */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  {/* 1. Điện thoại */}
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
                     <div className="p-3 rounded-lg bg-blue-100 text-blue-600 flex-shrink-0">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14. 3 6V5z" />
                       </svg>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                         Điện thoại
                       </div>
-                      <div className="font-semibold text-gray-900 mt-1">
-                        {phone}
-                      </div>
+                      <div className="font-semibold text-gray-900 mt-1">{phone}</div>
                     </div>
                   </div>
 
+                  {/* 2. Liên hệ khẩn cấp (đã thay thế vị trí Email) */}
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
-                    <div className="p-3 rounded-lg bg-indigo-100 text-indigo-600 flex-shrink-0">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 12a4 4 0 10-8 0 4 4 0 008 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
+                    <div className="p-3 rounded-lg bg-red-100 text-red-600 flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Email
+                        Liên hệ khẩn cấp
                       </div>
                       <div className="font-semibold text-gray-900 mt-1">
-                        {email}
+                        {emergencyContact?.name || "Chưa có tên"}
                       </div>
+                      {emergencyContact?.phone && (
+                        <div className="text-sm text-gray-600 mt-0.5">{formatPhone(emergencyContact.phone)}</div>
+                      )}
                     </div>
                   </div>
 
-
+                  {/* 3. Địa chỉ thường trú */}
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
                     <div className="p-3 rounded-lg bg-pink-100 text-pink-600 flex-shrink-0">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       </svg>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Địa chỉ
+                        Địa chỉ thường trú
                       </div>
-                      <div className="font-semibold text-gray-900 mt-1 line-clamp-2">
-                        {address}
-                      </div>
+                      <div className="font-semibold text-gray-900 mt-1 line-clamp-2">{address}</div>
                     </div>
                   </div>
 
-                  {/* Địa chỉ tạm trú */}
+                  {/* 4. Địa chỉ tạm trú */}
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
                     <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600 flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A2 2 0 013 15.382V6a2 2 0 012-2h14a2 2 0 012 2v9.382a2 2 0 01-1.553 1.894L15 20a2 2 0 01-2 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M9 20l-5.447-2.724A2 2 0 013 15.382V6a2 2 0 012-2h14a2 2 0 012 2v9.382a2 2 0 01-1.553 1.894L15 20a2 2 0 01-2 0z" />
                       </svg>
                     </div>
                     <div>
@@ -313,39 +252,6 @@ const AdminElderlyDetailPage = () => {
                       <div className="font-semibold text-gray-900 mt-1 line-clamp-2">
                         {currentAddress}
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
-                    <div className="p-3 rounded-lg bg-violet-100 text-violet-600 flex-shrink-0">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Liên hệ khẩn cấp
-                      </div>
-                      <div className="font-semibold text-gray-900 mt-1">
-                        {emergencyContact?.name
-                          ? `${emergencyContact.name}`
-                          : emergencyContact?.phone ?? "N/A"}
-                      </div>
-                      {emergencyContact?.phone && (
-                        <div className="text-sm text-gray-600 mt-0.5">
-                          {emergencyContact.phone}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -360,7 +266,7 @@ const AdminElderlyDetailPage = () => {
             </div>
           </div>
 
-          {/* Right column */}
+          {/* Right column - Trạng thái tài khoản */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <div className="mb-4">
@@ -375,11 +281,7 @@ const AdminElderlyDetailPage = () => {
                         : "bg-gray-400"
                     }`}
                   ></span>
-                  <span
-                    className={`text-lg font-bold ${
-                      data.isActive ? "text-green-700" : "text-gray-700"
-                    }`}
-                  >
+                  <span className={`text-lg font-bold ${data.isActive ? "text-green-700" : "text-gray-700"}`}>
                     {data.isActive ? "Đang hoạt động" : "Đã bị khóa"}
                   </span>
                 </div>
@@ -396,7 +298,6 @@ const AdminElderlyDetailPage = () => {
             </div>
           </div>
         </div>
-
         {/* === TABS SECTION === */}
         <div className="mt-10">
           <div className="flex flex-wrap gap-2 border-b border-gray-200 mb-6">
