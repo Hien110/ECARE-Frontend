@@ -256,7 +256,7 @@ export const validateSupporterData = (data) => {
     errors.push('Email không hợp lệ');
   }
   
-  if (!['male', 'female', 'other'].includes(data.gender)) {
+  if (!['Nam', 'Nữ', 'Khác'].includes(data.gender)) {
     errors.push('Giới tính không hợp lệ');
   }
   
