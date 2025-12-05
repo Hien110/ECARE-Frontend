@@ -91,10 +91,9 @@ const AdminElderlyDetailPage = () => {
     );
 
   const name = data.fullName || "Người dùng";
-  // Thêm +84 nếu là số Việt Nam, giữ N/A nếu không có
+  
   const formatPhone = (phone) => {
     if (!phone || phone === "N/A") return "N/A";
-    // Nếu đã có +84 thì giữ nguyên, nếu bắt đầu bằng 84 thì thêm dấu +
     if (phone.startsWith("+84")) return phone;
     if (phone.startsWith("84")) return "+" + phone;
     if (phone.startsWith("0")) return "+84" + phone.slice(1);
@@ -147,8 +146,16 @@ const AdminElderlyDetailPage = () => {
               <div className="h-24 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
               <div className="px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16 mb-6 relative z-10">
-                  <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-4xl font-bold text-white shadow-lg border-4 border-white">
-                    {name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                  <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-4xl font-bold text-white shadow-lg border-4 border-white overflow-hidden">
+                    {data.avatar ? (
+                      <img
+                        src={data.avatar}
+                        alt={name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <h2 className="text-3xl font-bold text-gray-900 mt-15">{name}</h2>

@@ -136,9 +136,15 @@ const AdminViewSupporterPage = () => {
               {/* Profile Header */}
               <div className="flex items-start space-x-6 mb-8">
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">
-                    {data.fullName?.charAt(0) || 'S'}
-                  </span>
+                  {data.avatar ? (
+                      <img
+                        src={data.avatar}
+                        alt={name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</span>
+                    )}
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{data.fullName || 'N/A'}</h2>
