@@ -47,6 +47,13 @@ const UserListTable = ({
     visible: false,
     userId: null,
     isActive: null,
+    type: null, // 'lock', 'resetPassword'
+  });
+  // State cho thông báo custom
+  const [notifyModal, setNotifyModal] = useState({
+    visible: false,
+    message: "",
+    type: "success", // hoặc 'error'
   });
 
   useEffect(() => {
@@ -105,41 +112,99 @@ const UserListTable = ({
 
   /** HANDLE CONFIRM */
   const handleConfirm = async () => {
-    const { userId, isActive } = confirmModal;
-    try {
-      await adminService.setUserActive(userId, !isActive);
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, isActive: !isActive } : u))
-      );
-    } catch (err) {
-      alert(err?.response?.data?.message || "Đổi trạng thái thất bại");
-    } finally {
-      setConfirmModal({ visible: false, userId: null, isActive: null });
+    const { userId, isActive, type } = confirmModal;
+    if (type === "lock") {
+      try {
+        await adminService.setUserActive(userId, !isActive);
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, isActive: !isActive } : u))
+        );
+      } catch (err) {
+        setNotifyModal({
+          visible: true,
+          message: err?.response?.data?.message || "Đổi trạng thái thất bại",
+          type: "error",
+        });
+      } finally {
+        setConfirmModal({ visible: false, userId: null, isActive: null, type: null });
+      }
+    } else if (type === "resetPassword") {
+      try {
+        await adminService.resetUserPassword(userId);
+        setNotifyModal({
+          visible: true,
+          message: "Đã reset mật khẩu về '1'.",
+          type: "success",
+        });
+      } catch (err) {
+        setNotifyModal({
+          visible: true,
+          message: err?.response?.data?.message || "Reset mật khẩu thất bại",
+          type: "error",
+        });
+      } finally {
+        setConfirmModal({ visible: false, userId: null, isActive: null, type: null });
+      }
     }
   };
 
   if (loading) return <div className="p-4">Đang tải...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
+  // Modal thông báo custom
+  const NotifyModal = ({ visible, message, type, onClose }) => {
+    if (!visible) return null;
+    return (
+      <>
+        <div className="fixed inset-0 bg-black/30 z-50"></div>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 min-w-[300px] max-w-[90vw] text-center">
+            <div className={`text-2xl mb-2 ${type === "error" ? "text-red-500" : "text-green-500"}`}>
+              {type === "error" ? "❌" : "✅"}
+            </div>
+            <div className="text-lg font-semibold mb-4">{message}</div>
+            <button
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              onClick={onClose}
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 relative">
+      {/* MODAL THÔNG BÁO */}
+      <NotifyModal
+        visible={notifyModal.visible}
+        message={notifyModal.message}
+        type={notifyModal.type}
+        onClose={() => setNotifyModal({ ...notifyModal, visible: false })}
+      />
+
       {/* MODAL CONFIRM */}
       {confirmModal.visible && (
         <>
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm"></div>
-
           <div className="fixed inset-0 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-xl shadow-xl w-96">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Xác Nhận
-              </h2>
-              <p className="text-gray-700 mb-6">
-                Bạn có chắc muốn{" "}
-                <span className="font-semibold text-red-600">
-                  {confirmModal.isActive ? "KHÓA" : "MỞ KHÓA"}
-                </span>{" "}
-                tài khoản này không?
-              </p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Xác Nhận</h2>
+              {confirmModal.type === "lock" ? (
+                <p className="text-gray-700 mb-6">
+                  Bạn có chắc muốn{" "}
+                  <span className="font-semibold text-red-600">
+                    {confirmModal.isActive ? "KHÓA" : "MỞ KHÓA"}
+                  </span>{" "}
+                  tài khoản này không?
+                </p>
+              ) : (
+                <p className="text-gray-700 mb-6">
+                  Bạn có chắc muốn reset mật khẩu tài khoản này về <span className="font-semibold text-blue-600">'1'</span>?
+                </p>
+              )}
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() =>
@@ -147,6 +212,7 @@ const UserListTable = ({
                       visible: false,
                       userId: null,
                       isActive: null,
+                      type: null,
                     })
                   }
                   className="px-4 py-2 border rounded-lg hover:bg-gray-100"
@@ -380,16 +446,14 @@ const UserListTable = ({
                         <span
                           className="text-gray-400 hover:text-gray-600 cursor-pointer"
                           title="Reset mật khẩu về '1'"
-                          onClick={async () => {
-                            if (window.confirm("Bạn có chắc muốn reset mật khẩu tài khoản này về '1'?")) {
-                              try {
-                                await adminService.resetUserPassword(u.id);
-                                alert("Đã reset mật khẩu về '1'.");
-                              } catch (err) {
-                                alert(err?.response?.data?.message || "Reset mật khẩu thất bại");
-                              }
-                            }
-                          }}
+                          onClick={() =>
+                            setConfirmModal({
+                              visible: true,
+                              userId: u.id,
+                              isActive: u.isActive,
+                              type: "resetPassword",
+                            })
+                          }
                         >
                           ✏️
                         </span>
