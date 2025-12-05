@@ -7,7 +7,7 @@ const AdminCreateSupporterPage = () => {
   const [form, setForm] = useState({
     fullName: "",
     phoneNumber: "",
-    gender: "male",
+    gender: "Nam",
     password: "",
     email: "",
     dateOfBirth: "",
@@ -118,7 +118,7 @@ const AdminCreateSupporterPage = () => {
       setForm({
         fullName: "",
         phoneNumber: "",
-        gender: "male",
+        gender: "Nam",
         password: "",
         email: "",
         dateOfBirth: "",
@@ -200,8 +200,8 @@ const AdminCreateSupporterPage = () => {
                 </label>
                 <div className="flex space-x-3">
                   {[
-                    { value: "female", label: "Nữ", icon: "♀" },
-                    { value: "male", label: "Nam", icon: "♂" },
+                    { value: "Nữ", label: "Nữ", icon: "♀" },
+                    { value: "Nam", label: "Nam", icon: "♂" },
                   ].map((option) => (
                     <label key={option.value} className="flex-1">
                       <input

@@ -10,7 +10,7 @@ const AdminCreateDoctorPage = () => {
     fullName: "",
     phoneNumber: "",
     email: "",
-    gender: "female",
+    gender: "Nữ",
     dateOfBirth: "",
     address: "",
     password: "",
@@ -134,7 +134,7 @@ const AdminCreateDoctorPage = () => {
         fullName: "",
         phoneNumber: "",
         email: "",
-        gender: "female",
+        gender: "Nữ",
         dateOfBirth: "",
         address: "",
         password: "",
@@ -231,7 +231,7 @@ const AdminCreateDoctorPage = () => {
                     Giới tính <span className="text-red-500">*</span>
                   </label>
                   <div className="flex space-x-4">
-                    {["female", "male"].map((gender) => (
+                    {["Nữ", "Nam"].map((gender) => (
                       <button
                         key={gender}
                         type="button"
@@ -243,9 +243,9 @@ const AdminCreateDoctorPage = () => {
                         }`}
                       >
                         <span className="text-lg">
-                          {gender === "female" ? "♀" : "♂"}
+                          {gender === "Nữ" ? "♀" : "♂"}
                         </span>
-                        <span>{gender === "female" ? "Nữ" : "Nam"}</span>
+                        <span>{gender === "Nữ" ? "Nữ" : "Nam"}</span>
                       </button>
                     ))}
                   </div>
