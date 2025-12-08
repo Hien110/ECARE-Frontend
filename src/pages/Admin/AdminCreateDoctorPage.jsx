@@ -16,6 +16,10 @@ const AdminCreateDoctorPage = () => {
     password: "",
     confirmPassword: "",
     identityCard: "",
+    // Doctor Profile fields
+    specialization: "",
+    experience: "",
+    description: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -101,6 +105,11 @@ const AdminCreateDoctorPage = () => {
     if (formData.password !== formData.confirmPassword)
       errors.push("Mật khẩu xác nhận không khớp");
     if (!formData.address.trim()) errors.push("Địa chỉ đầy đủ là bắt buộc");
+    
+    // Validate doctor profile fields
+    if (!formData.specialization.trim()) errors.push("Chuyên khoa là bắt buộc");
+    if (!formData.experience || formData.experience < 0) errors.push("Kinh nghiệm là bắt buộc và phải >= 0");
+    
     return errors;
   };
 
@@ -124,10 +133,14 @@ const AdminCreateDoctorPage = () => {
         address: formData.address.trim(),
         password: formData.password,
         identityCard: formData.identityCard.trim(),
+        // Doctor Profile fields
+        specialization: formData.specialization.trim(),
+        experience: parseInt(formData.experience) || 0,
+        description: formData.description.trim(),
       };
 
       const res = await adminService.createDoctor(payload);
-      setMessage(res?.message || "Tạo tài khoản bác sĩ thành công!");
+      setMessage(res?.message || "Tạo tài khoản bác sĩ và hồ sơ chuyên môn thành công!");
 
       // Reset form
       setFormData({
@@ -140,6 +153,9 @@ const AdminCreateDoctorPage = () => {
         password: "",
         confirmPassword: "",
         identityCard: "",
+        specialization: "",
+        experience: "",
+        description: "",
       });
       setSelectedProvince(null);
       setSelectedWard(null);
@@ -370,6 +386,62 @@ const AdminCreateDoctorPage = () => {
                     placeholder="Nhập số căn cước công dân"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Doctor Profile Information Section */}
+            <div className="border-t-2 border-gray-200 pt-8 mt-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Thông tin hồ sơ chuyên môn bác sĩ</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Chuyên khoa <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="specialization"
+                      value={formData.specialization}
+                      onChange={handleInputChange}
+                      placeholder="Ví dụ: Tim mạch, Nhi khoa, Tâm lý học..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kinh nghiệm (năm) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="experience"
+                      value={formData.experience}
+                      onChange={handleInputChange}
+                      placeholder="Ví dụ: 5"
+                      min="0"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mô tả chuyên môn
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Ví dụ: Có 5 năm kinh nghiệm chuyên khoa Tim mạch..."
+                      rows="4"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

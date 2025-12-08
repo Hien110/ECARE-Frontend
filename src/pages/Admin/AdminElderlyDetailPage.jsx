@@ -169,27 +169,14 @@ const AdminElderlyDetailPage = () => {
 
                     </div>
                   </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
-                    <div className="flex-1 sm:flex-none bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 text-center">
-                      <div className="text-sm text-gray-600 font-medium">Hoàn thành</div>
-                      <div className="text-2xl font-bold text-green-600 mt-1">
-                        {completedCount.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="flex-1 sm:flex-none bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-red-200 text-center">
-                      <div className="text-sm text-gray-600 font-medium">Lịch hủy</div>
-                      <div className="text-2xl font-bold text-red-600 mt-1">
-                        {cancelledCount.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
 
                 {data.description && (
                   <p className="text-gray-700 leading-relaxed mb-6">{data.description}</p>
                 )}
 
-                {/* Grid thông tin - đã bỏ Email, đưa Liên hệ khẩn cấp lên vị trí thứ 2 */}
+                {/* Grid thông tin */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   {/* 1. Điện thoại */}
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
@@ -207,26 +194,7 @@ const AdminElderlyDetailPage = () => {
                     </div>
                   </div>
 
-                  {/* 2. Liên hệ khẩn cấp (đã thay thế vị trí Email) */}
-                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
-                    <div className="p-3 rounded-lg bg-red-100 text-red-600 flex-shrink-0">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Liên hệ khẩn cấp
-                      </div>
-                      <div className="font-semibold text-gray-900 mt-1">
-                        {emergencyContact?.name || "Chưa có tên"}
-                      </div>
-                      {emergencyContact?.phone && (
-                        <div className="text-sm text-gray-600 mt-0.5">{formatPhone(emergencyContact.phone)}</div>
-                      )}
-                    </div>
-                  </div>
+
 
                   {/* 3. Địa chỉ thường trú */}
                   <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200">
@@ -273,37 +241,7 @@ const AdminElderlyDetailPage = () => {
             </div>
           </div>
 
-          {/* Right column - Trạng thái tài khoản */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div className="mb-4">
-                <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                  Trạng thái tài khoản
-                </div>
-                <div className="mt-4 flex items-center gap-3">
-                  <span
-                    className={`h-4 w-4 rounded-full ${
-                      data.isActive
-                        ? "bg-green-500 shadow-lg shadow-green-500/50"
-                        : "bg-gray-400"
-                    }`}
-                  ></span>
-                  <span className={`text-lg font-bold ${data.isActive ? "text-green-700" : "text-gray-700"}`}>
-                    {data.isActive ? "Đang hoạt động" : "Đã bị khóa"}
-                  </span>
-                </div>
-              </div>
-              <button
-                className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 ${
-                  data.isActive
-                    ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                {data.isActive ? "Khóa tài khoản" : "Mở khóa"}
-              </button>
-            </div>
-          </div>
+
         </div>
         {/* === TABS SECTION === */}
         <div className="mt-10">
@@ -503,40 +441,12 @@ const AdminElderlyDetailPage = () => {
                 ) : supporterSchedules.length > 0 ? (
                   <div className="space-y-4">
                     {supporterSchedules.map((sch) => {
-                      const formatSession = (s) => {
-                        return s === "morning"
-                          ? "Buổi sáng"
-                          : s === "afternoon"
-                          ? "Buổi chiều"
-                          : s === "evening"
-                          ? "Buổi tối"
-                          : s;
-                      };
-
                       const formatDate = (d) =>
                         d ? new Date(d).toLocaleDateString("vi-VN") : "";
 
-                      let timeText = "";
-                      if (sch.bookingType === "session") {
-                        timeText = `${formatDate(
-                          sch.scheduleDate
-                        )} - ${formatSession(sch.scheduleTime)}`;
-                      } else if (sch.bookingType === "day") {
-                        timeText = `Toàn ngày ${formatDate(sch.scheduleDate)}`;
-                      } else if (sch.bookingType === "month") {
-                        timeText = `Theo tháng: ${formatDate(
-                          sch.monthStart
-                        )} → ${formatDate(sch.monthEnd)}`;
-                      }
-
-                      const typeText =
-                        sch.bookingType === "session"
-                          ? "Theo buổi"
-                          : sch.bookingType === "day"
-                          ? "Theo ngày"
-                          : sch.bookingType === "month"
-                          ? "Theo tháng"
-                          : "";
+                      const startDate = formatDate(sch.startDate);
+                      const endDate = formatDate(sch.endDate);
+                      const timeText = `${startDate} → ${endDate}`;
 
                       return (
                         <Link
@@ -558,7 +468,7 @@ const AdminElderlyDetailPage = () => {
                               </div>
                               <div className="text-xs text-gray-500 mt-2 flex items-center gap-3">
                                 <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                                  {typeText}
+                                  Lịch hẹn
                                 </span>
                                 <span>{timeText}</span>
                               </div>
@@ -568,6 +478,8 @@ const AdminElderlyDetailPage = () => {
                                 className={`px-4 py-1.5 rounded-full text-xs font-bold ${
                                   sch.status === "confirmed"
                                     ? "bg-blue-100 text-blue-700"
+                                    : sch.status === "in_progress"
+                                    ? "bg-purple-100 text-purple-700"
                                     : sch.status === "completed"
                                     ? "bg-green-100 text-green-700"
                                     : sch.status === "canceled"
@@ -579,6 +491,7 @@ const AdminElderlyDetailPage = () => {
                               >
                                 {sch.status === "pending" && "Chờ xác nhận"}
                                 {sch.status === "confirmed" && "Đã xác nhận"}
+                                {sch.status === "in_progress" && "Đang thực hiện"}
                                 {sch.status === "completed" && "Hoàn thành"}
                                 {sch.status === "canceled" && "Đã hủy"}
                               </span>

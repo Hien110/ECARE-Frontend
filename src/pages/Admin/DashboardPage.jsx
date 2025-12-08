@@ -97,7 +97,7 @@ const DashboardPage = () => {
 
   // Get filtered data
   const filteredRegisteredPackages = filterByMonth(registeredPackages, 'registeredAt');
-  const filteredSupporterSchedules = filterByMonth(supporterSchedules, 'scheduleDate');
+  const filteredSupporterSchedules = filterByMonth(supporterSchedules, 'startDate');
   
   // Count registered packages with doctors
   const registeredPackagesWithDoctors = filteredRegisteredPackages.filter(pkg => pkg.doctor).length;

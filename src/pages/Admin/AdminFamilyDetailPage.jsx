@@ -116,7 +116,7 @@ const AdminFamilyDetailPage = () => {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</div>
-                    <div className="font-semibold text-gray-900 mt-2 truncate">{email}</div>
+                    <div className="font-semibold text-gray-900 mt-2 truncate">{email === "N/A" ? "Chưa có" : email}</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Địa chỉ</div>
@@ -174,20 +174,6 @@ const AdminFamilyDetailPage = () => {
 
           {/* Sidebar Stats */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className={`h-3 w-3 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}></span>
-                    <span className={`text-sm font-semibold ${isActive ? "text-green-700" : "text-red-700"}`}>
-                      {isActive ? "✓ Hoạt động" : "✕ Bị khóa"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Stats Cards */}
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-sm border border-blue-200 p-5">
               <div className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-4">Tóm tắt</div>
@@ -195,12 +181,6 @@ const AdminFamilyDetailPage = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-700">Người già liên kết</span>
                   <span className="text-2xl font-bold text-blue-600">{linkedCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">Cập nhật lần cuối</span>
-                  <span className="text-sm font-semibold text-gray-700">
-                    {data.updatedAt ? formatDate(data.updatedAt) : "N/A"}
-                  </span>
                 </div>
               </div>
             </div>

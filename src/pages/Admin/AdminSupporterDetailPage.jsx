@@ -53,21 +53,7 @@ const AdminViewSupporterPage = () => {
     if (userId) fetchSchedules();
   }, [userId]);
 
-  // Function to toggle account lock status
-  const toggleAccountStatus = async () => {
-    setLoading(true);
-    setMessage("");
-    try {
-      const res = await adminService.setUserActive(userId, !data.isActive);
-      setMessage(res?.message || (data.isActive ? "Đã khóa tài khoản" : "Đã mở khóa tài khoản"));
-      // Update local data
-      setData({ ...data, isActive: !data.isActive });
-    } catch (e) {
-      setMessage(e?.response?.data?.message || "Cập nhật trạng thái thất bại");
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   if (error) {
     return (
@@ -104,8 +90,7 @@ const AdminViewSupporterPage = () => {
     );
   }
 
-  // Derived values (use model fields when available, otherwise fallbacks)
-  const specialty = data.specialty || (data.specialties && data.specialties[0]) || 'Chăm sóc người cao tuổi';
+  // Derived values from supporterSchedules
   const supporterCompletedCount = supporterSchedules.filter((sch) => sch.status === "completed").length;
   const supporterCanceledCount = supporterSchedules.filter((sch) => sch.status === "canceled" || sch.status === "cancelled").length;
 
@@ -149,8 +134,8 @@ const AdminViewSupporterPage = () => {
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{data.fullName || 'N/A'}</h2>
                   <div className="flex items-center space-x-4 mb-3">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                      {specialty}
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                      Người Hỗ Trợ
                     </span>
                     <span className="text-gray-600">
                       {data.experience?.totalYears ?? 0} năm kinh nghiệm
@@ -203,18 +188,7 @@ const AdminViewSupporterPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Khu vực hoạt động</p>
-                    <p className="font-medium text-gray-900">{(data.serviceAreaKm ?? data.serviceArea ?? data.operatingRadius ?? 0)} km</p>
-                  </div>
-                </div>
+
 
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -247,37 +221,6 @@ const AdminViewSupporterPage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Status Card */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Trạng thái tài khoản</h3>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${data.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className={`font-medium ${data.isActive ? 'text-green-700' : 'text-red-700'}`}>
-                    {data.isActive ? 'Đang hoạt động' : 'Đã bị khóa'}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={toggleAccountStatus}
-                disabled={loading}
-                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                  data.isActive
-                    ? 'bg-red-600 text-white hover:bg-red-700'
-                    : 'bg-green-600 text-white hover:bg-green-700'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Đang xử lý...</span>
-                  </div>
-                ) : (
-                  data.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'
-                )}
-              </button>
-            </div>
-
             {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-xl shadow-lg p-6 text-center">
@@ -325,21 +268,10 @@ const AdminViewSupporterPage = () => {
             ) : (
               <div className="space-y-4">
                 {supporterSchedules.map((sch) => {
-                  const formatSession = (s) => {
-                    if (s === "morning") return "Buổi sáng";
-                    if (s === "afternoon") return "Buổi chiều";
-                    if (s === "evening") return "Buổi tối";
-                    return s;
-                  };
                   const formatDate = (date) => (date ? new Date(date).toLocaleDateString("vi-VN") : "N/A");
-                  let timeText = "";
-                  if (sch.bookingType === "session") {
-                    timeText = `${formatDate(sch.scheduleDate)} - ${formatSession(sch.scheduleTime)}`;
-                  } else if (sch.bookingType === "day") {
-                    timeText = `Cả ngày ${formatDate(sch.scheduleDate)}`;
-                  } else if (sch.bookingType === "month") {
-                    timeText = `Tháng: ${formatDate(sch.monthStart)} → ${formatDate(sch.monthEnd)}`;
-                  }
+                  const startDate = formatDate(sch.startDate);
+                  const endDate = formatDate(sch.endDate);
+                  const timeText = `${startDate} → ${endDate}`;
                   const statusClass =
                     sch.status === "completed"
                       ? "bg-green-100 text-green-700"
@@ -349,6 +281,8 @@ const AdminViewSupporterPage = () => {
                       ? "bg-blue-100 text-blue-700"
                       : sch.status === "pending"
                       ? "bg-yellow-100 text-yellow-700"
+                      : sch.status === "in_progress"
+                      ? "bg-purple-100 text-purple-700"
                       : "bg-gray-100 text-gray-600";
 
                   return (
@@ -365,13 +299,7 @@ const AdminViewSupporterPage = () => {
                           <div className="text-sm text-gray-600 mt-1">{sch.service?.name || "Dịch vụ hỗ trợ"}</div>
                           <div className="text-xs text-gray-500 mt-2 flex flex-wrap items-center gap-2">
                             <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-medium">
-                              {sch.bookingType === "session"
-                                ? "Theo buổi"
-                                : sch.bookingType === "day"
-                                ? "Theo ngày"
-                                : sch.bookingType === "month"
-                                ? "Theo tháng"
-                                : sch.bookingType}
+                              Lịch hẹn
                             </span>
                             <span>{timeText}</span>
                           </div>
@@ -379,13 +307,9 @@ const AdminViewSupporterPage = () => {
                         <span className={`px-4 py-1.5 rounded-full text-xs font-semibold ${statusClass}`}>
                           {sch.status === "pending" && "Chờ xác nhận"}
                           {sch.status === "confirmed" && "Đã xác nhận"}
+                          {sch.status === "in_progress" && "Đang thực hiện"}
                           {sch.status === "completed" && "Hoàn thành"}
                           {sch.status === "canceled" && "Đã hủy"}
-                          {sch.status !== "pending" &&
-                            sch.status !== "confirmed" &&
-                            sch.status !== "completed" &&
-                            sch.status !== "canceled" &&
-                            (sch.status || "Không xác định")}
                         </span>
                       </div>
                     </Link>
