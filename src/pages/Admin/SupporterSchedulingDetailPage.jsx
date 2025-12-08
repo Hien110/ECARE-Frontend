@@ -58,19 +58,6 @@ const SupporterSchedulingDetailPage = () => {
     }
   }
 
-  const formatBookingType = (bookingType) => {
-    switch (bookingType) {
-      case "session":
-        return "Theo buổi"
-      case "day":
-        return "Theo ngày"
-      case "month":
-        return "Theo tháng"
-      default:
-        return "Không xác định"
-    }
-  }
-
   const formatPaymentMethod = (paymentMethod) => {
     switch (paymentMethod) {
       case "cash":
@@ -92,19 +79,6 @@ const SupporterSchedulingDetailPage = () => {
         return { text: "Đã hoàn tiền", color: "text-blue-600", bgColor: "bg-blue-50" }
       default:
         return { text: "Không xác định", color: "text-gray-600", bgColor: "bg-gray-50" }
-    }
-  }
-
-  const formatSessionTime = (sessionTime) => {
-    switch (sessionTime) {
-      case "morning":
-        return "Buổi sáng"
-      case "afternoon":
-        return "Buổi chiều"
-      case "evening":
-        return "Buổi tối"
-      default:
-        return "Không xác định"
     }
   }
 
@@ -323,51 +297,21 @@ const SupporterSchedulingDetailPage = () => {
               </div>
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Loại lịch</p>
-                  <p className="font-semibold text-gray-900">{formatBookingType(schedulingDetail.bookingType)}</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Dịch vụ</p>
+                  <p className="font-semibold text-gray-900">{schedulingDetail.service?.name || "Không xác định"}</p>
                 </div>
-                {schedulingDetail.bookingType === "session" && (
-                  <>
-                    <div className="pt-2 border-t border-gray-100">
-                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngày lịch</p>
-                      <p className="font-semibold text-gray-900">
-                        {new Date(schedulingDetail.scheduleDate).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Thời gian</p>
-                      <p className="font-semibold text-gray-900">{formatSessionTime(schedulingDetail.scheduleTime)}</p>
-                    </div>
-                  </>
-                )}
-                {schedulingDetail.bookingType === "day" && (
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngày lịch</p>
-                    <p className="font-semibold text-gray-900">
-                      {new Date(schedulingDetail.scheduleDate).toLocaleDateString("vi-VN")}
-                    </p>
-                  </div>
-                )}
-                {schedulingDetail.bookingType === "month" && (
-                  <>
-                    <div className="pt-2 border-t border-gray-100">
-                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngày bắt đầu</p>
-                      <p className="font-semibold text-gray-900">
-                        {new Date(schedulingDetail.monthStart).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngày kết thúc</p>
-                      <p className="font-semibold text-gray-900">
-                        {new Date(schedulingDetail.monthEnd).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Buổi/ngày</p>
-                      <p className="font-semibold text-gray-900">{schedulingDetail.monthSessionsPerDay.join(", ")}</p>
-                    </div>
-                  </>
-                )}
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngày bắt đầu</p>
+                  <p className="font-semibold text-gray-900">
+                    {new Date(schedulingDetail.startDate).toLocaleDateString("vi-VN")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngày kết thúc</p>
+                  <p className="font-semibold text-gray-900">
+                    {new Date(schedulingDetail.endDate).toLocaleDateString("vi-VN")}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -393,7 +337,7 @@ const SupporterSchedulingDetailPage = () => {
                 <div className="pt-2 border-t border-gray-100">
                   <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Giá</p>
                   <p className="font-bold text-lg text-teal-600">
-                    {schedulingDetail.priceAtBooking.toLocaleString("vi-VN")} VND
+                    {schedulingDetail.price ? schedulingDetail.price.toLocaleString("vi-VN") : "0"} VND
                   </p>
                 </div>
               </div>

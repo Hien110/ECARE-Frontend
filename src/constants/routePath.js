@@ -20,15 +20,11 @@ const ROUTE_PATH = {
   ADMIN_BULK_IMPORT_DOCTORS: '/admin/doctors/import',
   ADMIN_BULK_IMPORT_SUPPORTERS: '/admin/supporters/import',
 
-  ADMIN_REGISTERED_PACKAGES: '/admin/registered-packages',
-  ADMIN_DETAIL_REGISTERED_PACKAGE:'/admin/registered-packages/:id',
-  ADMIN_CREATE_HEALTH_PACKAGE: '/admin/health-packages/create',
-  ADMIN_LIST_HEALTH_PACKAGES: '/admin/health-packages',
-  ADMIN_EDIT_HEALTH_PACKAGE: '/admin/health-packages/edit/:id',
-  ADMIN_HEALTH_PACKAGE_DETAIL: '/admin/health-packages/:id',
+  ADMIN_HEALTH_CONSULTATION_SCHEDULES: '/admin/health-consultation-schedules',
+  ADMIN_HEALTH_CONSULTATION_SCHEDULE_DETAIL: '/admin/health-consultation-schedules/:id',
 
   ADMIN_VIEW_USER: '/admin/user',
-  ADMIN_VIEW_STAFF: 'admin/staff',
+  ADMIN_VIEW_STAFF: '/admin/staff',
   ADMIN_ELDERLY_LOCATION: '/admin/elderly-location',
 
   ADMIN_SUPPORTER_SCHEDULING_LIST: '/admin/supporter-schedulings',

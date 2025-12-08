@@ -6,7 +6,8 @@ import adminService from "../../services/adminService"
 const AdminDoctorDetailPage = () => {
   const [params] = useSearchParams()
   const userId = params.get("id")
-  const [data, setData] = useState(null)
+  const [userData, setUserData] = useState(null)
+  const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -16,11 +17,11 @@ const AdminDoctorDetailPage = () => {
   const [errorPackages, setErrorPackages] = useState("")
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       try {
-        const res = await adminService.getUserById(userId)
-        const userData = res?.data || null
-        setData(userData)
+        const res = await adminService.getDoctorProfile(userId)
+        setUserData(res?.data?.user || null)
+        setProfileData(res?.data?.profile || null)
       } catch (e) {
         console.error("❌ AdminDoctorDetailPage - Error:", e)
         setError(e?.response?.data?.message || "Tải thông tin doctor thất bại")
@@ -28,7 +29,7 @@ const AdminDoctorDetailPage = () => {
         setLoading(false)
       }
     }
-    if (userId) fetch()
+    if (userId) fetchData()
   }, [userId])
 
   // Fetch assigned packages
@@ -36,61 +37,64 @@ const AdminDoctorDetailPage = () => {
     if (!userId) return
     setLoadingPackages(true)
     setErrorPackages("")
-    adminService.getPackagesByDoctor(userId)
+    adminService.getCompletedConsultationsByDoctor(userId)
       .then(res => {
         setAssignedPackages(res?.data || [])
       })
       .catch(e => {
-        setErrorPackages(e?.response?.data?.message || "Không thể tải danh sách gói khám đã nhận")
+        setErrorPackages(e?.response?.data?.message || "Không thể tải danh sách tư vấn đã hoàn thành")
       })
       .finally(() => setLoadingPackages(false))
   }, [userId])
 
   if (loading) return <div className="p-4">Đang tải...</div>
   if (error) return <div className="p-4 text-red-600">{error}</div>
-  if (!data) return <div className="p-4">Không có dữ liệu</div>
+  if (!userData) return <div className="p-4">Không có dữ liệu</div>
 
+  // User fields
+  const name = userData.fullName || "Bác sĩ"
+  const phone = userData.phoneNumber || "N/A"
+  const email = userData.email || "N/A"
+  const address = userData.address || "N/A"
+  
   // DoctorProfile fields
-  const name = data.fullName || "Bác sĩ"
-  const phone = data.phoneNumber || "N/A"
-  const email = data.email || "N/A"
-  const workplace = data.hospitalName || data.workplace || data.address || "N/A"
-  const specializations = data.specializations || data.specialty || data.title || "Chuyên khoa tổng quát"
-  const experience = data.experience || 0
-  const rating = data.ratingStats?.averageRating ?? data.rating ?? 0
-  const ratingCount = data.ratingStats?.totalRatings ?? data.ratingCount ?? 0
-
-  const consultationFees = data.consultationFees || { online: 0, offline: 0 }
-
-  const consultationDuration = data.consultationDuration || 30
+  const specialization = profileData?.specialization || "Chuyên khoa tổng quát"
+  const experience = profileData?.experience || 0
+  const description = profileData?.description || "Không có mô tả chuyên môn."
+  const rating = profileData?.ratingStats?.averageRating ?? 0
+  const ratingCount = profileData?.ratingStats?.totalRatings ?? 0
 
   // Render assigned packages
   const renderAssignedPackages = () => {
-    if (loadingPackages) return <div>Đang tải danh sách gói khám...</div>
+    if (loadingPackages) return <div>Đang tải danh sách lịch khám đã hoàn thành...</div>
     if (errorPackages) return <div className="text-red-600">{errorPackages}</div>
-    if (!assignedPackages.length) return <div>Chưa đảm nhận gói khám nào.</div>
+    if (!assignedPackages.length) return <div>Chưa có lịch khám nào hoàn thành.</div>
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full border mt-2 bg-white rounded-xl">
           <thead>
             <tr className="bg-slate-100">
-              <th className="px-3 py-2 text-left">Tên gói</th>
+              <th className="px-3 py-2 text-left">Người cao tuổi</th>
+              <th className="px-3 py-2 text-left">Người đăng ký</th>
+              <th className="px-3 py-2 text-left">Ghi chú</th>
               <th className="px-3 py-2 text-left">Giá</th>
-              <th className="px-3 py-2 text-left">Thời hạn</th>
-              <th className="px-3 py-2 text-left">Người hưởng</th>
-              <th className="px-3 py-2 text-left">Ngày đăng ký</th>
+              <th className="px-3 py-2 text-left">Ngày hoàn thành</th>
               <th className="px-3 py-2 text-left">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
-            {assignedPackages.map((pkg, idx) => (
-              <tr key={pkg._id || idx} className="border-b last:border-0">
-                <td className="px-3 py-2">{pkg.packageRef?.title || "-"}</td>
-                <td className="px-3 py-2">{pkg.price?.toLocaleString() || pkg.packageRef?.price?.toLocaleString() || "-"} đ</td>
-                <td className="px-3 py-2">{pkg.durationDays || pkg.packageRef?.durations?.map(d => d.days).join(", ") || "-"} ngày</td>
-                <td className="px-3 py-2">{pkg.beneficiary?.fullName || "-"}</td>
-                <td className="px-3 py-2">{pkg.registeredAt ? new Date(pkg.registeredAt).toLocaleDateString() : "-"}</td>
-                <td className="px-3 py-2">{pkg.isActive ? <span className="text-green-600">Đang hiệu lực</span> : <span className="text-gray-400">Hết hạn</span>}</td>
+            {assignedPackages.map((consultation, idx) => (
+              <tr key={consultation._id || idx} className="border-b last:border-0">
+                <td className="px-3 py-2">{consultation.beneficiary?.fullName || "-"}</td>
+                <td className="px-3 py-2">{consultation.registrant?.fullName || "-"}</td>
+                <td className="px-3 py-2">{consultation.doctorNote || "-"}</td>
+                <td className="px-3 py-2">{consultation.price?.toLocaleString() || "-"} đ</td>
+                <td className="px-3 py-2">{consultation.updatedAt ? new Date(consultation.updatedAt).toLocaleDateString() : "-"}</td>
+                <td className="px-3 py-2">
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                    Hoàn thành
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -114,7 +118,7 @@ const AdminDoctorDetailPage = () => {
                 {/* Avatar section */}
                 <div className="flex-shrink-0">
                   <img
-                    src={data.avatar || "/placeholder-doctor.png"}
+                    src={userData.avatar || "/placeholder-doctor.png"}
                     alt="avatar"
                     className="w-32 h-32 rounded-2xl object-cover shadow-lg"
                   />
@@ -123,9 +127,9 @@ const AdminDoctorDetailPage = () => {
                 {/* Main info section */}
                 <div className="flex-1">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
-                    <div>
-                      <h2 className="text-2xl font-bold text-slate-900">{name}</h2>
-                      <p className="text-slate-600 mt-1 font-medium">{specializations}</p>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-900">{name}</h2>
+                    <p className="text-slate-600 mt-1 font-medium">{specialization}</p>
                       <div className="flex items-center gap-2 mt-3">
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -142,7 +146,7 @@ const AdminDoctorDetailPage = () => {
                     </div>
                   </div>
 
-                  <p className="text-slate-700 leading-relaxed">{data.description || "Không có mô tả chuyên môn."}</p>
+                  <p className="text-slate-700 leading-relaxed">{description}</p>
 
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
@@ -152,16 +156,16 @@ const AdminDoctorDetailPage = () => {
                       </div>
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-slate-600">Chuyên môn:</span>
-                          <span className="font-medium text-slate-900">{specializations}</span>
+                          <span className="text-slate-600">Chuyên khoa:</span>
+                          <span className="font-medium text-slate-900">{specialization}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-600">Nơi công tác:</span>
-                          <span className="font-medium text-slate-900">{workplace}</span>
+                          <span className="text-slate-600">Kinh nghiệm:</span>
+                          <span className="font-medium text-slate-900">{experience} năm</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-600">Thời lượng tư vấn:</span>
-                          <span className="font-medium text-slate-900">{consultationDuration} phút</span>
+                          <span className="text-slate-600">Đánh giá:</span>
+                          <span className="font-medium text-slate-900">{rating.toFixed(1)}/5 ({ratingCount})</span>
                         </div>
                       </div>
                     </div>
@@ -169,21 +173,10 @@ const AdminDoctorDetailPage = () => {
                     <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-100">
                       <div className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
                         <div className="w-1 h-5 bg-emerald-600 rounded"></div>
-                        Phí tư vấn
+                        Mô tả chuyên môn
                       </div>
                       <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Online:</span>
-                          <span className="font-medium text-slate-900">
-                            {consultationFees.online?.toLocaleString()} đ
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Offline:</span>
-                          <span className="font-medium text-slate-900">
-                            {consultationFees.offline?.toLocaleString()} đ
-                          </span>
-                        </div>
+                        <p className="text-slate-700 leading-relaxed">{description}</p>
                       </div>
                     </div>
                   </div>
@@ -235,8 +228,8 @@ const AdminDoctorDetailPage = () => {
                         </svg>
                       </div>
                       <div className="min-w-0 w-full">
-                        <div className="text-xs font-semibold text-slate-500 uppercase">Nơi Ở</div>
-                        <div className="font-semibold text-slate-900 mt-1 break-words whitespace-pre-line">{workplace}</div>
+                        <div className="text-xs font-semibold text-slate-500 uppercase">Địa Chỉ</div>
+                        <div className="font-semibold text-slate-900 mt-1 break-words whitespace-pre-line">{address}</div>
                       </div>
                     </div>
                   </div>
@@ -249,7 +242,7 @@ const AdminDoctorDetailPage = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mt-6">
             <div className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-indigo-600 rounded"></div>
-              Các gói khám đã đảm nhận
+              Các lịch khám đã hoàn thành
             </div>
             {renderAssignedPackages()}
           </div>

@@ -63,35 +63,14 @@ const navigate = useNavigate();  // Hook dùng để điều hướng
     }
   };
 
-  const formatBookingType = (
-    bookingType,
-    scheduleDate,
-    scheduleTime,
-    monthStart,
-    monthEnd
-  ) => {
-    if (bookingType === "session") {
-      switch (scheduleTime) {
-        case "morning":
-          return "Buổi sáng";
-        case "afternoon":
-          return "Buổi chiều";
-        case "evening":
-          return "Buổi tối";
-        default:
-          return "Không xác định";
-      }
+  const formatDateRange = (startDate, endDate) => {
+    if (!startDate || !endDate) return "Không xác định";
+    const start = new Date(startDate).toLocaleDateString("vi-VN");
+    const end = new Date(endDate).toLocaleDateString("vi-VN");
+    if (start === end) {
+      return start;
     }
-
-    if (bookingType === "day") {
-      return formatDate(scheduleDate); // Chỉ hiển thị ngày
-    }
-
-    if (bookingType === "month") {
-      return `${formatDate(monthStart)} - ${formatDate(monthEnd)}`; // Hiển thị thời gian tháng
-    }
-
-    return "Không xác định";
+    return `${start} - ${end}`;
   };
 
 const handleRowClick = (id) => {
@@ -130,7 +109,8 @@ const handleRowClick = (id) => {
                 <th className="px-4 py-2 text-left border-b">Mã lịch</th>
                 <th className="px-4 py-2 text-left border-b">Người hỗ trợ</th>
                 <th className="px-4 py-2 text-left border-b">Người cao tuổi</th>
-                <th className="px-4 py-2 text-left border-b">Ngày & Giờ</th>
+                <th className="px-4 py-2 text-left border-b">Dịch vụ</th>
+                <th className="px-4 py-2 text-left border-b">Thời gian</th>
                 <th className="px-4 py-2 text-left border-b">Trạng thái</th>
                 <th className="px-4 py-2 text-left border-b">Thanh toán</th>
               </tr>
@@ -151,15 +131,10 @@ const handleRowClick = (id) => {
                       {schedule.elderly.fullName}
                     </td>
                     <td className="px-4 py-2 border-b">
-                      {formatBookingType(
-                        schedule.bookingType,
-                        schedule.scheduleDate,
-                        schedule.scheduleTime,
-                        schedule.monthStart,
-                        schedule.monthEnd
-                      )}
-                      {schedule.bookingType === "session" &&
-                        ` - ${formatDate(schedule.scheduleDate)}`}
+                      {schedule.service?.name || "Không xác định"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {formatDateRange(schedule.startDate, schedule.endDate)}
                     </td>
                     <td className="px-4 py-2 border-b">
                       <span
@@ -189,7 +164,7 @@ const handleRowClick = (id) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-4 text-gray-600">
+                  <td colSpan="7" className="text-center py-4 text-gray-600">
                     Không có dữ liệu
                   </td>
                 </tr>
