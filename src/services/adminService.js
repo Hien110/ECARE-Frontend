@@ -1,3 +1,4 @@
+
 import axios from "axios";
 
 import API_BASE_URL from "../config/api";
@@ -53,9 +54,9 @@ export const getSupporterProfile = async (userId) => {
 };
 
 // Admin: Cập nhật trạng thái hoạt động của supporter (khóa/mở khóa)
-export const setSupporterActive = async (userId, isActive) => {
+export const setUserActive = async (userId, isActive) => {
   const { data } = await axios.patch(
-    `${ADMIN_API_BASE}/supporters/${userId}/status`,
+    `${ADMIN_API_BASE}/status/${userId}`,
     { isActive },
     { headers: { ...getAuthHeader() } }
   );
@@ -83,6 +84,15 @@ export const getDashboard = async () => {
   const { data } = await axios.get(`${ADMIN_API_BASE}/dashboard`, {
     headers: { ...getAuthHeader() },
   });
+  return data;
+};
+// Admin: Reset mật khẩu user về '1'
+export const resetUserPassword = async (userId) => {
+  const { data } = await axios.put(
+    `${ADMIN_API_BASE}/reset-password/${userId}`,
+    {},
+    { headers: { ...getAuthHeader() } }
+  );
   return data;
 };
 
@@ -246,7 +256,7 @@ export const validateSupporterData = (data) => {
     errors.push('Email không hợp lệ');
   }
   
-  if (!['male', 'female', 'other'].includes(data.gender)) {
+  if (!['Nam', 'Nữ', 'Khác'].includes(data.gender)) {
     errors.push('Giới tính không hợp lệ');
   }
   
@@ -257,12 +267,13 @@ export const validateSupporterData = (data) => {
 };
 
 const adminService = {
+  resetUserPassword,
   getPackagesByDoctor,
   getSupporterSchedulesByStatus,
   createSupporter,
   createDoctor,
   getSupporterProfile,
-  setSupporterActive,
+  setUserActive,
   getAllSupporters,
   getAllUsers,
   getUserById,

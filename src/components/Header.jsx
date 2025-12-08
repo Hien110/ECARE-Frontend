@@ -9,11 +9,12 @@ import {
   BarChart3,
   MessageCircle,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import ROUTE_PATH from "../constants/routePath";
 
 function Header() {
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const [isPackagesOpen, setIsPackagesOpen] = useState(false);
@@ -50,10 +51,6 @@ function Header() {
               className="relative p-2 rounded-full hover:bg-gray-100 transition"
               aria-label="Notifications"
             >
-              <Bell size={18} className="text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 text-white text-[10px] px-1">
-                3
-              </span>
             </button>
 
             <div className="relative">
@@ -80,19 +77,10 @@ function Header() {
 
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                  <Link
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    to="#"
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                    onClick={() => navigate("/")}
                   >
-                    Profile
-                  </Link>
-                  <Link
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    to="#"
-                  >
-                    Settings
-                  </Link>
-                  <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50">
                     Logout
                   </button>
                 </div>
@@ -241,29 +229,6 @@ function Header() {
             </div>
           )}
         </div>
-
-
-        <Link
-          to="/admin/appointments"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith("/admin/appointments")
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          <CalendarDays size={16} /> Lịch Hẹn
-        </Link>
-
-        <Link
-          to="/admin/reports"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-            pathname.startsWith("/admin/reports")
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          <BarChart3 size={16} /> Báo Cáo
-        </Link>
       </nav>
     </header>
   );
