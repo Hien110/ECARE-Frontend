@@ -37,7 +37,6 @@ const HealthConsultationScheduleDetailPage = () => {
 
   const getStatusDisplay = (status) => {
     const statusMap = {
-      pending: { text: "Chờ xử lý", color: "yellow" },
       confirmed: { text: "Đã xác nhận", color: "blue" },
       in_progress: { text: "Đang thực hiện", color: "purple" },
       completed: { text: "Hoàn thành", color: "green" },
@@ -81,7 +80,7 @@ const HealthConsultationScheduleDetailPage = () => {
 
   if (!data) return null
 
-  const { doctor, beneficiary, registrant, durationDays, price, status, registeredAt } = data
+  const { doctor, beneficiary, registrant, price, status, registeredAt, scheduledDate, slot, doctorNote, paymentMethod, paymentStatus } = data
 
   const statusInfo = getStatusDisplay(status)
   const statusColorClasses = {
@@ -116,8 +115,12 @@ const HealthConsultationScheduleDetailPage = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Thông tin lịch tư vấn</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <p className="text-sm text-slate-600 font-medium">Thời hạn</p>
-                <p className="text-lg font-semibold text-gray-900">{durationDays || "N/A"} ngày</p>
+                <p className="text-sm text-slate-600 font-medium">Ngày lịch</p>
+                <p className="text-lg font-semibold text-gray-900">{formatDate(scheduledDate)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 font-medium">Buổi</p>
+                <p className="text-lg font-semibold text-gray-900">{slot === "morning" ? "Sáng" : "Chiều"}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600 font-medium">Giá</p>
@@ -126,6 +129,33 @@ const HealthConsultationScheduleDetailPage = () => {
               <div>
                 <p className="text-sm text-slate-600 font-medium">Trạng thái</p>
                 <p className="text-lg font-semibold text-gray-900">{statusInfo.text}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Thông tin thanh toán */}
+          <div className="mb-8 p-6 bg-slate-50 rounded-lg border border-slate-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Thông tin thanh toán</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm text-slate-600 font-medium">Phương thức</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {paymentMethod === "cash" ? "Tiền mặt" : "Chuyển khoản"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 font-medium">Trạng thái thanh toán</p>
+                <p className="text-lg font-semibold">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    paymentStatus === "paid" ? "bg-green-100 text-green-800" :
+                    paymentStatus === "refunded" ? "bg-gray-100 text-gray-800" :
+                    "bg-yellow-100 text-yellow-800"
+                  }`}>
+                    {paymentStatus === "paid" ? "Đã thanh toán" :
+                     paymentStatus === "refunded" ? "Đã hoàn tiền" :
+                     "Chưa thanh toán"}
+                  </span>
+                </p>
               </div>
               <div>
                 <p className="text-sm text-slate-600 font-medium">Ngày đăng ký</p>
@@ -168,9 +198,9 @@ const HealthConsultationScheduleDetailPage = () => {
             </div>
           </div>
 
-          {/* Người hưởng lợi */}
+          {/* Người cao tuổi */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Thông tin người hưởng lợi</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Thông tin người cao tuổi</h2>
             <div className="border border-slate-200 rounded-lg p-6">
               {beneficiary ? (
                 <div className="flex items-center gap-6">
@@ -245,6 +275,16 @@ const HealthConsultationScheduleDetailPage = () => {
               )}
             </div>
           </div>
+
+          {/* Ghi chú từ bác sĩ */}
+          {doctorNote && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Ghi chú từ bác sĩ</h2>
+              <div className="border border-blue-200 rounded-lg p-6 bg-blue-50">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{doctorNote}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
