@@ -39,7 +39,6 @@ const HealthConsultationSchedulesPage = () => {
 
   const getStatusBadgeColor = (status) => {
     const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
       confirmed: "bg-blue-100 text-blue-800",
       in_progress: "bg-purple-100 text-purple-800",
       completed: "bg-green-100 text-green-800",
@@ -85,12 +84,12 @@ const HealthConsultationSchedulesPage = () => {
                   <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                     <th className="px-6 py-4 text-left text-sm font-semibold">#</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Bác sĩ</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Người hưởng</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Người cao tuổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Người đăng ký</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Thời hạn</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày lịch</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Buổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Giá</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Trạng thái</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày đăng ký</th>
                   </tr>
                 </thead>
 
@@ -122,9 +121,16 @@ const HealthConsultationSchedulesPage = () => {
                         <div className="text-xs text-slate-500">{item.registrant?.role || ""}</div>
                       </td>
 
-                      {/* Thời hạn (ngày) */}
+                      {/* Ngày lịch */}
                       <td className="px-6 py-4 text-sm text-slate-700">
-                        {item.durationDays || "N/A"} ngày
+                        {formatDate(item.scheduledDate)}
+                      </td>
+
+                      {/* Buổi (morning/afternoon) */}
+                      <td className="px-6 py-4 text-sm text-slate-700">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                          {item.slot === "morning" ? "Sáng" : "Chiều"}
+                        </span>
                       </td>
 
                       {/* Giá */}
@@ -135,17 +141,11 @@ const HealthConsultationSchedulesPage = () => {
                       {/* Trạng thái */}
                       <td className="px-6 py-4 text-sm">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
-                          {item.status === "pending" && "Chờ xử lý"}
                           {item.status === "confirmed" && "Đã xác nhận"}
                           {item.status === "in_progress" && "Đang thực hiện"}
                           {item.status === "completed" && "Hoàn thành"}
                           {item.status === "cancelled" && "Đã hủy"}
                         </span>
-                      </td>
-
-                      {/* Ngày đăng ký */}
-                      <td className="px-6 py-4 text-sm text-slate-700">
-                        {formatDate(item.registeredAt)}
                       </td>
                     </tr>
                   ))}
