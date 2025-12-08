@@ -10,6 +10,22 @@ const getDetailsByRole = (user) => {
   return "Address N/A";
 };
 
+// Helper function to get detail link based on role
+const getDetailLink = (user) => {
+  switch (user.role) {
+    case "doctor":
+      return `/admin/doctors/view?id=${user.id}`;
+    case "elderly":
+      return `/admin/elderly/view?id=${user.id}`;
+    case "supporter":
+      return `/admin/supporters/view?id=${user.id}`;
+    case "family":
+      return `/admin/family/view?id=${user.id}`;
+    default:
+      return `/admin/users/view?id=${user.id}`;
+  }
+};
+
 // Local helper to map role codes to display labels
 const roleLabel = (role) => {
   if (!role) return "N/A";
@@ -17,7 +33,7 @@ const roleLabel = (role) => {
     case "elderly":
       return "Người Cao Tuổi";
     case "supporter":
-      return "Cộng Tác Viên";
+      return "Người Hỗ Trợ";
     case "family":
       return "Thành Viên Gia Đình";
     case "doctor":
@@ -77,6 +93,8 @@ const UserListTable = ({
           .filter((u) => u && u.role !== "admin");
         setUsers(mapped);
       } catch (e) {
+        console.error("❌ UserListTable.fetchUsers Error:", e);
+        console.error("Response data:", e?.response?.data);
         setError(
           e?.response?.data?.message || "Tải danh sách người dùng thất bại"
         );
@@ -354,12 +372,15 @@ const UserListTable = ({
 
               <tbody className="bg-white divide-y divide-gray-200">
                 {filtered.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50">
+                  <Link
+                    key={u.id}
+                    to={getDetailLink(u)}
+                    className="table-row hover:bg-gray-50 cursor-pointer"
+                  >
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
                         {u.fullName}
                       </div>
-                      <div className="text-sm text-gray-500">{u.email}</div>
                     </td>
 
                     <td className="px-6 py-4">
@@ -402,58 +423,25 @@ const UserListTable = ({
                         : "N/A"}
                     </td>
 
-                    <td className="px-6 py-4 text-sm font-medium">
+                    <td 
+                      className="px-6 py-4 text-sm font-medium"
+                      onClick={(e) => e.preventDefault()}
+                    >
                       <div className="flex space-x-3">
-                        {/* View Link */}
-                        {u.role === "doctor" ? (
-                          <Link
-                            to={`/admin/doctors/view?id=${u.id}`}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            👁️
-                          </Link>
-                        ) : u.role === "elderly" ? (
-                          <Link
-                            to={`/admin/elderly/view?id=${u.id}`}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            👁️
-                          </Link>
-                        ) : u.role === "supporter" ? (
-                          <Link
-                            to={`/admin/supporters/view?id=${u.id}`}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            👁️
-                          </Link>
-                        ) : u.role === "family" ? (
-                          <Link
-                            to={`/admin/family/view?id=${u.id}`}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            👁️
-                          </Link>
-                        ) : (
-                          <Link
-                            to={`/admin/users/view?id=${u.id}`}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            👁️
-                          </Link>
-                        )}
-
-                        {/* EDIT ICON */}
+                        {/* EDIT ICON - Reset Password */}
                         <span
                           className="text-gray-400 hover:text-gray-600 cursor-pointer"
                           title="Reset mật khẩu về '1'"
-                          onClick={() =>
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             setConfirmModal({
                               visible: true,
                               userId: u.id,
                               isActive: u.isActive,
                               type: "resetPassword",
-                            })
-                          }
+                            });
+                          }}
                         >
                           ✏️
                         </span>
@@ -466,19 +454,22 @@ const UserListTable = ({
                           title={
                             u.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"
                           }
-                          onClick={() =>
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             setConfirmModal({
                               visible: true,
                               userId: u.id,
                               isActive: u.isActive,
-                            })
-                          }
+                              type: "lock",
+                            });
+                          }}
                         >
                           🔒
                         </span>
                       </div>
                     </td>
-                  </tr>
+                  </Link>
                 ))}
               </tbody>
             </table>
