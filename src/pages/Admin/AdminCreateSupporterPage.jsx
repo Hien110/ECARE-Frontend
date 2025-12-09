@@ -7,12 +7,16 @@ const AdminCreateSupporterPage = () => {
   const [form, setForm] = useState({
     fullName: "",
     phoneNumber: "",
-    gender: "male",
+    gender: "Nam",
     password: "",
     email: "",
     dateOfBirth: "",
     address: "",
     identityCard: "",
+    experience: {
+      totalYears: "",
+      description: "",
+    },
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -24,7 +28,21 @@ const AdminCreateSupporterPage = () => {
 
   const navigate = useNavigate();
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith("experience.")) {
+      const field = name.split(".")[1];
+      setForm({
+        ...form,
+        experience: {
+          ...form.experience,
+          [field]: value,
+        },
+      });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
 
   // Đồng bộ detailedAddress, selectedWard, selectedProvince vào form.address
   useEffect(() => {
@@ -118,12 +136,16 @@ const AdminCreateSupporterPage = () => {
       setForm({
         fullName: "",
         phoneNumber: "",
-        gender: "male",
+        gender: "Nam",
         password: "",
         email: "",
         dateOfBirth: "",
         address: "",
         identityCard: "",
+        experience: {
+          totalYears: "",
+          description: "",
+        },
       });
       setSelectedProvince(null);
       setSelectedWard(null);
@@ -200,8 +222,8 @@ const AdminCreateSupporterPage = () => {
                 </label>
                 <div className="flex space-x-3">
                   {[
-                    { value: "female", label: "Nữ", icon: "♀" },
-                    { value: "male", label: "Nam", icon: "♂" },
+                    { value: "Nữ", label: "Nữ", icon: "♀" },
+                    { value: "Nam", label: "Nam", icon: "♂" },
                   ].map((option) => (
                     <label key={option.value} className="flex-1">
                       <input
@@ -348,6 +370,36 @@ const AdminCreateSupporterPage = () => {
                   placeholder="Nhập số căn cước công dân"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
+                />
+              </div>
+
+              {/* Experience - Years */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Kinh nghiệm (năm)
+                </label>
+                <input
+                  type="number"
+                  name="experience.totalYears"
+                  value={form.experience.totalYears}
+                  onChange={onChange}
+                  placeholder="Nhập số năm kinh nghiệm"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                />
+              </div>
+
+              {/* Experience - Description */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mô tả kinh nghiệm
+                </label>
+                <textarea
+                  name="experience.description"
+                  value={form.experience.description}
+                  onChange={onChange}
+                  placeholder="Mô tả chi tiết về kinh nghiệm làm việc, kỹ năng..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-24 resize-none"
                 />
               </div>
             </div>

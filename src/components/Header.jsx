@@ -176,16 +176,10 @@ function Header() {
           {isPackagesOpen && (
             <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
               <Link
-                to="/admin/health-packages"
+                to="/admin/health-consultation-schedules"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
               >
-                Quản lý dịch vụ
-              </Link>
-              <Link
-                to="/admin/registered-packages"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
-              >
-                Dịch vụ đã được đăng ký
+                Lịch khám đã đặt
               </Link>
             </div>
           )}

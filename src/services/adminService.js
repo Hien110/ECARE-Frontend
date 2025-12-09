@@ -38,7 +38,10 @@ export const createSupporter = async (payload) => {
 
 // Admin: Tạo tài khoản doctor mới
 export const createDoctor = async (payload) => {
-  // expected payload: { fullName, phoneNumber, gender, password, email, dateOfBirth, address? }
+  // expected payload: { 
+  //   fullName, phoneNumber, gender, password, email, dateOfBirth, address, identityCard,
+  //   specialization, experience, description
+  // }
   const { data } = await axios.post(`${ADMIN_API_BASE}/doctors`, payload, {
     headers: { ...getAuthHeader() },
   });
@@ -48,6 +51,22 @@ export const createDoctor = async (payload) => {
 // Admin: Lấy thông tin chi tiết supporter theo userId
 export const getSupporterProfile = async (userId) => {
   const { data } = await axios.get(`${ADMIN_API_BASE}/supporters/${userId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+
+// Admin: Lấy thông tin chi tiết DoctorProfile theo userId
+export const getDoctorProfile = async (userId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/doctors/${userId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+
+// Admin: Lấy danh sách các tư vấn đã hoàn thành của bác sĩ
+export const getCompletedConsultationsByDoctor = async (doctorId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/doctors/${doctorId}/completed-consultations`, {
     headers: { ...getAuthHeader() },
   });
   return data;
@@ -256,7 +275,7 @@ export const validateSupporterData = (data) => {
     errors.push('Email không hợp lệ');
   }
   
-  if (!['male', 'female', 'other'].includes(data.gender)) {
+  if (!['Nam', 'Nữ', 'Khác'].includes(data.gender)) {
     errors.push('Giới tính không hợp lệ');
   }
   
@@ -273,6 +292,8 @@ const adminService = {
   createSupporter,
   createDoctor,
   getSupporterProfile,
+  getDoctorProfile,
+  getCompletedConsultationsByDoctor,
   setUserActive,
   getAllSupporters,
   getAllUsers,

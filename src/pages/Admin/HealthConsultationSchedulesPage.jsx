@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react"
 import adminService from "../../services/adminService"
 import { useNavigate } from "react-router-dom"
+import ROUTE_PATH from "../../constants/routePath"
 
-const RegisteredPackagesPage = () => {
+const HealthConsultationSchedulesPage = () => {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -12,7 +13,7 @@ const RegisteredPackagesPage = () => {
   const [page, setPage] = useState(1)
   const [limit] = useState(20)
 
-  const fetchPackages = async () => {
+  const fetchSchedules = async () => {
     setLoading(true)
     setError(null)
     try {
@@ -31,16 +32,31 @@ const RegisteredPackagesPage = () => {
   }
 
   useEffect(() => {
-    fetchPackages()
+    fetchSchedules()
   }, [page, limit])
 
   const navigate = useNavigate()
 
+  const getStatusBadgeColor = (status) => {
+    const colors = {
+      confirmed: "bg-blue-100 text-blue-800",
+      in_progress: "bg-purple-100 text-purple-800",
+      completed: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
+    }
+    return colors[status] || "bg-gray-100 text-gray-800"
+  }
+
+  const formatDate = (date) => {
+    if (!date) return "N/A"
+    return new Date(date).toLocaleDateString("vi-VN")
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-slate-900 mb-2">Danh sách gói khám đã đăng ký</h1>
-        <p className="text-slate-600">Quản lý và theo dõi các gói khám được đăng ký</p>
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Danh sách đặt lịch tư vấn sức khỏe</h1>
+        <p className="text-slate-600">Quản lý và theo dõi các lịch tư vấn sức khỏe đã đặt</p>
       </div>
 
       {loading && (
@@ -67,49 +83,69 @@ const RegisteredPackagesPage = () => {
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                     <th className="px-6 py-4 text-left text-sm font-semibold">#</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Tên gói</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Người đăng ký</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Người hưởng</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Bác sĩ</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày đăng ký</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Người cao tuổi</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Người đăng ký</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày lịch</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Buổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Giá</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Trạng thái</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-slate-200">
-                  {items.map((pkg, idx) => (
+                  {items.map((item, idx) => (
                     <tr
-                      key={pkg._id}
+                      key={item._id}
                       className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
-                      onClick={() => navigate(`/admin/registered-packages/${pkg._id}`)}
-                      title="Xem chi tiết gói khám"
+                      onClick={() => navigate(`${ROUTE_PATH.ADMIN_HEALTH_CONSULTATION_SCHEDULES}/${item._id}`)}
+                      title="Xem chi tiết"
                     >
                       <td className="px-6 py-4 text-sm text-slate-700 font-medium">{(page - 1) * limit + idx + 1}</td>
-                      <td className="px-6 py-4">{pkg.packageRef?.title || "N/A"}</td>
+                      
+                      {/* Bác sĩ */}
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-slate-900">{item.doctor?.fullName || "N/A"}</div>
+                        <div className="text-xs text-slate-500">{item.doctor?.role || ""}</div>
+                      </td>
+
+                      {/* Người hưởng */}
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-slate-900">{item.beneficiary?.fullName || "N/A"}</div>
+                        <div className="text-xs text-slate-500">{item.beneficiary?.role || ""}</div>
+                      </td>
+
+                      {/* Người đăng ký */}
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-slate-900">{item.registrant?.fullName || "N/A"}</div>
+                        <div className="text-xs text-slate-500">{item.registrant?.role || ""}</div>
+                      </td>
+
+                      {/* Ngày lịch */}
                       <td className="px-6 py-4 text-sm text-slate-700">
-                        <div className="font-medium">{pkg.registrant?.fullName || "N/A"}</div>
-                        <div className="text-xs text-slate-500">{pkg.registrant?.role}</div>
+                        {formatDate(item.scheduledDate)}
                       </td>
+
+                      {/* Buổi (morning/afternoon) */}
                       <td className="px-6 py-4 text-sm text-slate-700">
-                        <div className="font-medium">{pkg.beneficiary?.fullName || "N/A"}</div>
-                        <div className="text-xs text-slate-500">{pkg.beneficiary?.role}</div>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                          {item.slot === "morning" ? "Sáng" : "Chiều"}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 text-sm">
-                        {pkg.doctor?.fullName ? (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {pkg.doctor.fullName}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                            Chưa gán
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-700">
-                        {pkg.registeredAt ? new Date(pkg.registeredAt).toLocaleDateString() : "N/A"}
-                      </td>
+
+                      {/* Giá */}
                       <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                        {pkg.price?.toLocaleString("vi-VN") || "N/A"} VND
+                        {item.price?.toLocaleString("vi-VN") || "N/A"} VND
+                      </td>
+
+                      {/* Trạng thái */}
+                      <td className="px-6 py-4 text-sm">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
+                          {item.status === "confirmed" && "Đã xác nhận"}
+                          {item.status === "in_progress" && "Đang thực hiện"}
+                          {item.status === "completed" && "Hoàn thành"}
+                          {item.status === "cancelled" && "Đã hủy"}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -143,4 +179,4 @@ const RegisteredPackagesPage = () => {
   )
 }
 
-export default RegisteredPackagesPage
+export default HealthConsultationSchedulesPage
