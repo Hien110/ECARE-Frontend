@@ -86,7 +86,7 @@ const HealthConsultationSchedulesPage = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold">Bác sĩ</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Người cao tuổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Người đăng ký</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày lịch</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày khám</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Buổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Giá</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Trạng thái</th>

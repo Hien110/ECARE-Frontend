@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import adminService, { getSupporterSchedulesByStatus, getRegisteredPackages } from '../../services/adminService';
-import  {getHealthPackages} from '@/services/healthPackageService';
 
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
