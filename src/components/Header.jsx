@@ -181,6 +181,12 @@ function Header() {
               >
                 Lịch khám đã đặt
               </Link>
+              <Link
+                to="/admin/consultation-price"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Quản lý giá khám
+              </Link>
             </div>
           )}
         </div>

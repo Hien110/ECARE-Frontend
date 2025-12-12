@@ -47,11 +47,11 @@ const SupporterSchedulingDetailPage = () => {
 
   const formatGender = (gender) => {
     switch (gender) {
-      case "male":
+      case "Nam":
         return "Nam"
-      case "female":
+      case "Nữ":
         return "Nữ"
-      case "other":
+      case "Khác":
         return "Khác"
       default:
         return "Không xác định"
@@ -121,6 +121,16 @@ const SupporterSchedulingDetailPage = () => {
     )
   }
 
+  if (!schedulingDetail) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+        <div className="text-center">
+          <p className="text-gray-600 font-medium">Không có dữ liệu</p>
+        </div>
+      </div>
+    )
+  }
+
   const statusInfo = formatStatus(schedulingDetail.status)
   const paymentInfo = formatPaymentStatus(schedulingDetail.paymentStatus)
 
@@ -147,7 +157,7 @@ const SupporterSchedulingDetailPage = () => {
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0">
                   <img
-                    src={schedulingDetail.supporter.avatar || defaultAvatar}
+                    src={schedulingDetail.supporter?.avatar || defaultAvatar}
                     alt="Avatar người hỗ trợ"
                     className="w-24 h-24 rounded-full object-cover border-4 border-teal-100"
                   />
@@ -161,24 +171,24 @@ const SupporterSchedulingDetailPage = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Tên:</span>
-                      <span className="font-semibold text-gray-900">{schedulingDetail.supporter.fullName}</span>
+                      <span className="font-semibold text-gray-900">{schedulingDetail.supporter?.fullName || "N/A"}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Giới tính:</span>
                       <span className="font-semibold text-gray-900">
-                        {formatGender(schedulingDetail.supporter.gender)}
+                        {formatGender(schedulingDetail.supporter?.gender)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Số điện thoại:</span>
                       <span className="font-semibold text-gray-900">
-                        +{schedulingDetail.phoneNumberSupporter}
+                        +{schedulingDetail.phoneNumberSupporter || "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Email:</span>
                       <span className="font-semibold text-gray-900">
-                        {schedulingDetail.emailSupporter ? schedulingDetail.emailSupporter : "Không có"}
+                        {schedulingDetail.emailSupporter || "Không có"}
                       </span>
                     </div>
                   </div>
@@ -191,7 +201,7 @@ const SupporterSchedulingDetailPage = () => {
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0">
                   <img
-                    src={schedulingDetail.elderly.avatar || defaultAvatar}
+                    src={schedulingDetail.elderly?.avatar || defaultAvatar}
                     alt="Avatar người cao tuổi"
                     className="w-24 h-24 rounded-full object-cover border-4 border-blue-100"
                   />
@@ -205,36 +215,36 @@ const SupporterSchedulingDetailPage = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Tên:</span>
-                      <span className="font-semibold text-gray-900">{schedulingDetail.elderly.fullName}</span>
+                      <span className="font-semibold text-gray-900">{schedulingDetail.elderly?.fullName || "N/A"}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Giới tính:</span>
                       <span className="font-semibold text-gray-900">
-                        {formatGender(schedulingDetail.elderly.gender)}
+                        {formatGender(schedulingDetail.elderly?.gender)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Ngày sinh:</span>
                       <span className="font-semibold text-gray-900">
-                        {new Date(schedulingDetail.elderly.dateOfBirth).toLocaleDateString("vi-VN")}
+                        {schedulingDetail.elderly?.dateOfBirth ? new Date(schedulingDetail.elderly.dateOfBirth).toLocaleDateString("vi-VN") : "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Số điện thoại:</span>
                       <span className="font-semibold text-gray-900">
-                        +{schedulingDetail.phoneNumberElderly}
+                        +{schedulingDetail.phoneNumberElderly || "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Email:</span>
                       <span className="font-semibold text-gray-900">
-                        {schedulingDetail.emailElderly ? schedulingDetail.emailElderly : "Không có"}
+                        {schedulingDetail.emailElderly || "Không có"}
                       </span>
                     </div>
                     <div className="flex items-start justify-between pt-2 border-t border-gray-100">
                       <span className="text-gray-600">Địa chỉ:</span>
                       <span className="font-semibold text-gray-900 text-right max-w-xs">
-                        {schedulingDetail.address}
+                        {schedulingDetail.elderly?.currentAddress || "N/A"}
                       </span>
                     </div>
                   </div>
@@ -247,7 +257,7 @@ const SupporterSchedulingDetailPage = () => {
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0">
                   <img
-                    src={schedulingDetail.createdBy.avatar || defaultAvatar}
+                    src={schedulingDetail.registrant?.avatar || defaultAvatar}
                     alt="Avatar người đặt lịch"
                     className="w-24 h-24 rounded-full object-cover border-4 border-purple-100"
                   />
@@ -261,24 +271,24 @@ const SupporterSchedulingDetailPage = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Tên:</span>
-                      <span className="font-semibold text-gray-900">{schedulingDetail.createdBy.fullName}</span>
+                      <span className="font-semibold text-gray-900">{schedulingDetail.registrant?.fullName || "N/A"}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Giới tính:</span>
                       <span className="font-semibold text-gray-900">
-                        {formatGender(schedulingDetail.createdBy.gender)}
+                        {formatGender(schedulingDetail.registrant?.gender)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Số điện thoại:</span>
                       <span className="font-semibold text-gray-900">
-                        +{schedulingDetail.phoneNumberCreatedBy}
+                        +{schedulingDetail.phoneNumberRegistrant || "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Email:</span>
                       <span className="font-semibold text-gray-900">
-                        {schedulingDetail.emailCreatedBy ? schedulingDetail.emailCreatedBy : "Không có"}
+                        {schedulingDetail.emailRegistrant || "Không có"}
                       </span>
                     </div>
                   </div>
