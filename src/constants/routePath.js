@@ -22,6 +22,7 @@ const ROUTE_PATH = {
 
   ADMIN_HEALTH_CONSULTATION_SCHEDULES: '/admin/health-consultation-schedules',
   ADMIN_HEALTH_CONSULTATION_SCHEDULE_DETAIL: '/admin/health-consultation-schedules/:id',
+  ADMIN_CONSULTATION_PRICE: '/admin/consultation-price',
 
   ADMIN_VIEW_USER: '/admin/user',
   ADMIN_VIEW_STAFF: '/admin/staff',
