@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import adminService from "../../services/adminService";
-import {
-  getUsedPackagesByBeneficiary,
-  getRegisteredPackagesByRegistrant,
-  getSupporterSchedulesByElderly,
-} from "../../services/healthPackageService";
 import ROUTE_PATH from "../../constants/routePath";
 
 const AdminElderlyDetailPage = () => {
@@ -14,17 +9,12 @@ const AdminElderlyDetailPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [usedPackages, setUsedPackages] = useState([]);
-  const [loadingPackages, setLoadingPackages] = useState(false);
-  const [registeredPackages, setRegisteredPackages] = useState([]);
-  const [supporterSchedules, setSupporterSchedules] = useState([]);
+  const [consultationSchedules, setConsultationSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
-  const [activeTab, setActiveTab] = useState("used");
 
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    setLoadingPackages(true);
     setLoadingSchedules(true);
 
     adminService
@@ -36,27 +26,17 @@ const AdminElderlyDetailPage = () => {
       })
       .finally(() => setLoading(false));
 
-    getUsedPackagesByBeneficiary(userId)
+    // Lấy danh sách lịch tư vấn
+    adminService
+      .getConsultationSchedulesByBeneficiary(userId)
       .then((res) => {
-        if (res.success) setUsedPackages(res.data || []);
-        else setUsedPackages([]);
+        if (res.success) {
+          setConsultationSchedules(res.data || []);
+        }
       })
-      .catch(() => setUsedPackages([]))
-      .finally(() => setLoadingPackages(false));
-
-    getRegisteredPackagesByRegistrant(userId)
-      .then((res) => {
-        if (res.success) setRegisteredPackages(res.data || []);
-        else setRegisteredPackages([]);
+      .catch((e) => {
+        console.error("Error fetching schedules:", e);
       })
-      .catch(() => setRegisteredPackages([]));
-
-    getSupporterSchedulesByElderly(userId)
-      .then((res) => {
-        if (res.success) setSupporterSchedules(res.data || []);
-        else setSupporterSchedules([]);
-      })
-      .catch(() => setSupporterSchedules([]))
       .finally(() => setLoadingSchedules(false));
   }, [userId]);
 
@@ -67,6 +47,17 @@ const AdminElderlyDetailPage = () => {
     } catch {
       return iso;
     }
+  };
+
+  const getStatusDisplay = (status) => {
+    const statusMap = {
+      confirmed: { text: "Đã xác nhận", color: "blue" },
+      in_progress: { text: "Đang thực hiện", color: "purple" },
+      completed: { text: "Hoàn thành", color: "green" },
+      cancelled: { text: "Đã hủy", color: "red" },
+      canceled: { text: "Đã hủy", color: "red" },
+    };
+    return statusMap[status] || { text: status, color: "gray" };
   };
 
   if (loading)
@@ -113,16 +104,14 @@ const AdminElderlyDetailPage = () => {
       ? "Bác sĩ"
       : "Người cao tuổi";
 
-  const doctorCompleted = registeredPackages.filter((pkg) => pkg.status === "completed").length;
-  const doctorCancelled = registeredPackages.filter(
-    (pkg) => pkg.status === "canceled" || pkg.status === "cancelled"
+  const doctorCompleted = 0;
+  const doctorCancelled = 0;
+  const supporterCompleted = 0;
+  const supporterCancelled = 0;
+  const completedCount = consultationSchedules.filter((sch) => sch.status === "completed").length;
+  const cancelledCount = consultationSchedules.filter(
+    (sch) => sch.status === "cancelled" || sch.status === "canceled"
   ).length;
-  const supporterCompleted = supporterSchedules.filter((sch) => sch.status === "completed").length;
-  const supporterCancelled = supporterSchedules.filter(
-    (sch) => sch.status === "canceled" || sch.status === "cancelled"
-  ).length;
-  const completedCount = doctorCompleted + supporterCompleted;
-  const cancelledCount = doctorCancelled + supporterCancelled;
 
   const emergencyContact = data.emergencyContact || {
     name: data.emergencyName || null,
@@ -245,282 +234,96 @@ const AdminElderlyDetailPage = () => {
         </div>
         {/* === TABS SECTION === */}
         <div className="mt-10">
-          <div className="flex flex-wrap gap-2 border-b border-gray-200 mb-6">
-            <button
-              onClick={() => setActiveTab("used")}
-              className={`px-6 py-3 font-semibold text-sm transition-all duration-200 border-b-2 -mb-px ${
-                activeTab === "used"
-                  ? "border-blue-600 text-blue-700 bg-blue-50"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Lịch sử gói khám với Bác Sĩ
-            </button>
-            <button
-              onClick={() => setActiveTab("supporter")}
-              className={`px-6 py-3 font-semibold text-sm transition-all duration-200 border-b-2 -mb-px ${
-                activeTab === "supporter"
-                  ? "border-indigo-600 text-indigo-700 bg-indigo-50"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Lịch hẹn với người hỗ trợ
-            </button>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Lịch tư vấn sức khỏe</h2>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            {/* Tab 1: Used Packages */}
-            {activeTab === "used" && (
-              <div className="p-6">
-                {loadingPackages ? (
-                  <div className="text-center py-12">
-                    <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin mx-auto"></div>
-                    <div className="text-gray-600 mt-4 font-medium">
-                      Đang tải dữ liệu...
-                    </div>
-                  </div>
-                ) : usedPackages.length > 0 ? (
-                  <div className="space-y-4">
-                    {usedPackages.map((pkg, idx) => (
-                      <div
-                        key={pkg._id || idx}
-                        className="group relative rounded-xl border border-gray-200 bg-white hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden"
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-blue-600 group-hover:w-2 transition-all"></div>
-                        <div className="p-5 pl-6">
-                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center border border-blue-200 text-sm font-bold text-blue-600">
-                                  {idx + 1}
-                                </div>
-                                <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
-                                  {pkg.packageRef?.title ||
-                                    "Gói khám không xác định"}
-                                </h4>
-                              </div>
-                              <div className="text-sm text-gray-600 ml-12">
-                                Đăng ký bởi:{" "}
-                                <span className="font-medium text-gray-900">
-                                  {pkg.registrant?.fullName || "-"}
-                                </span>
-                                {pkg.durationDays && (
-                                  <span className="ml-3 px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">
-                                    {pkg.durationDays} ngày
-                                  </span>
-                                )}
-                              </div>
+            {loadingSchedules ? (
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin mx-auto"></div>
+                <div className="text-gray-600 mt-4 font-medium">Đang tải dữ liệu...</div>
+              </div>
+            ) : consultationSchedules.length > 0 ? (
+              <div className="divide-y divide-gray-200">
+                {consultationSchedules.map((schedule, idx) => {
+                  const statusInfo = getStatusDisplay(schedule.status);
+                  const statusColorClasses = {
+                    yellow: "bg-yellow-100 text-yellow-800",
+                    blue: "bg-blue-100 text-blue-800",
+                    purple: "bg-purple-100 text-purple-800",
+                    green: "bg-green-100 text-green-800",
+                    red: "bg-red-100 text-red-800",
+                    gray: "bg-gray-100 text-gray-800",
+                  };
+
+                  return (
+                    <Link
+                      key={schedule._id || idx}
+                      to={ROUTE_PATH.ADMIN_HEALTH_CONSULTATION_SCHEDULES + "/" + schedule._id}
+                      className="block p-6 hover:bg-blue-50 transition-colors group cursor-pointer"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center text-sm font-bold text-blue-600 border border-blue-200">
+                              {idx + 1}
                             </div>
-                            <div className="flex flex-wrap gap-3 text-sm">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 hidden sm:inline">
-                                  BS:
-                                </span>
-                                {pkg.doctor?.fullName ? (
-                                  <span className="px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-xs border border-emerald-200">
-                                    {pkg.doctor.fullName}
-                                  </span>
-                                ) : (
-                                  <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs">
-                                    Chưa gán
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-gray-600">
-                                Ngày:{" "}
-                                {pkg.registeredAt
-                                  ? formatDate(pkg.registeredAt)
-                                  : "N/A"}
-                              </div>
-                              <div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                                {pkg.price
-                                  ? pkg.price.toLocaleString("vi-VN") + " đ"
-                                  : "N/A"}
-                              </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-700">
+                                {formatDate(schedule.scheduledDate)} - {schedule.slot === "morning" ? "Buổi sáng" : "Buổi chiều"}
+                              </h4>
+                              <p className="text-sm text-gray-600 mt-1">
+                                Đăng ký bởi: <span className="font-medium">{schedule.registrant?.fullName || "N/A"}</span>
+                              </p>
                             </div>
                           </div>
+                          <div className="ml-11 text-sm text-gray-600 space-y-1">
+                            <div>
+                              <span className="font-medium">Bác sĩ:</span> {schedule.doctor?.fullName || "Chưa gán"}
+                            </div>
+                            <div>
+                              <span className="font-medium">Giá:</span> {schedule.price?.toLocaleString("vi-VN")} VND
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2 text-right">
+                          <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ${statusColorClasses[statusInfo.color]}`}>
+                            {statusInfo.text}
+                          </span>
+                          <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ${
+                            schedule.paymentStatus === "paid" ? "bg-green-100 text-green-800" :
+                            schedule.paymentStatus === "refunded" ? "bg-gray-100 text-gray-800" :
+                            "bg-yellow-100 text-yellow-800"
+                          }`}>
+                            {schedule.paymentStatus === "paid" ? "Đã thanh toán" :
+                             schedule.paymentStatus === "refunded" ? "Đã hoàn tiền" :
+                             "Chưa thanh toán"}
+                          </span>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 text-gray-500">
-                    <svg
-                      className="w-20 h-20 mx-auto text-gray-200 mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <div className="font-medium">
-                      Chưa có gói khám nào đã sử dụng.
-                    </div>
-                  </div>
-                )}
+                    </Link>
+                  );
+                })}
               </div>
-            )}
-
-            {/* Tab 2: Lịch hẹn bác sĩ */}
-            {activeTab === "doctor" && (
-              <div className="p-6">
-                {registeredPackages.filter((p) => p.doctor).length === 0 ? (
-                  <div className="text-center py-16 text-gray-500">
-                    <svg
-                      className="w-20 h-20 mx-auto text-gray-200 mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <div className="font-medium">
-                      Chưa có lịch hẹn với bác sĩ nào.
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {registeredPackages
-                      .filter((pkg) => pkg.doctor)
-                      .map((pkg, idx) => (
-                        <div
-                          key={pkg._id || idx}
-                          className="border border-emerald-100 rounded-xl p-5 bg-emerald-50/30 hover:bg-emerald-50 transition-colors"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-bold text-lg text-emerald-800">
-                                {pkg.packageRef?.title || "Gói khám"}
-                              </h4>
-                              <div className="mt-2 text-sm text-gray-700">
-                                <span className="font-medium">
-                                  Bác sĩ phụ trách:
-                                </span>{" "}
-                                {pkg.doctor?.fullName || "Chưa chỉ định"}
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                Đăng ký ngày:{" "}
-                                {pkg.registeredAt
-                                  ? formatDate(pkg.registeredAt)
-                                  : "N/A"}
-                              </div>
-                            </div>
-                            <span className="px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
-                              {pkg.status === "active"
-                                ? "Đang hoạt động"
-                                : pkg.status || "Chưa rõ"}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab 3: Lịch hẹn supporter */}
-            {activeTab === "supporter" && (
-              <div className="p-6">
-                {loadingSchedules ? (
-                  <div className="text-center py-12">
-                    <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-indigo-500 animate-spin mx-auto"></div>
-                    <div className="text-gray-600 mt-4 font-medium">
-                      Đang tải lịch hẹn...
-                    </div>
-                  </div>
-                ) : supporterSchedules.length > 0 ? (
-                  <div className="space-y-4">
-                    {supporterSchedules.map((sch) => {
-                      const formatDate = (d) =>
-                        d ? new Date(d).toLocaleDateString("vi-VN") : "";
-
-                      const startDate = formatDate(sch.startDate);
-                      const endDate = formatDate(sch.endDate);
-                      const timeText = `${startDate} → ${endDate}`;
-
-                      return (
-                        <Link
-                          key={sch._id}
-                          to={ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL.replace(
-                            ":id",
-                            sch._id
-                          )}
-                          className="block p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer group"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900 group-hover:text-blue-700">
-                                {sch.supporter?.fullName || "Người hỗ trợ"}
-                              </div>
-                              <div className="text-sm text-gray-600 mt-1">
-                                {sch.service?.name ||
-                                  "Chăm sóc người già cơ bản"}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-2 flex items-center gap-3">
-                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                                  Lịch hẹn
-                                </span>
-                                <span>{timeText}</span>
-                              </div>
-                            </div>
-                            <div className="text-right ml-4">
-                              <span
-                                className={`px-4 py-1.5 rounded-full text-xs font-bold ${
-                                  sch.status === "confirmed"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : sch.status === "in_progress"
-                                    ? "bg-purple-100 text-purple-700"
-                                    : sch.status === "completed"
-                                    ? "bg-green-100 text-green-700"
-                                    : sch.status === "canceled"
-                                    ? "bg-red-100 text-red-700"
-                                    : sch.status === "pending"
-                                    ? "bg-yellow-100 text-yellow-700"
-                                    : "bg-gray-100 text-gray-600"
-                                }`}
-                              >
-                                {sch.status === "pending" && "Chờ xác nhận"}
-                                {sch.status === "confirmed" && "Đã xác nhận"}
-                                {sch.status === "in_progress" && "Đang thực hiện"}
-                                {sch.status === "completed" && "Hoàn thành"}
-                                {sch.status === "canceled" && "Đã hủy"}
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 text-gray-500">
-                    <svg
-                      className="w-20 h-20 mx-auto text-gray-300 mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <div className="font-medium">
-                      Chưa có lịch hẹn với người hỗ trợ.
-                    </div>
-                  </div>
-                )}
+            ) : (
+              <div className="p-6 text-center">
+                <svg
+                  className="w-20 h-20 mx-auto text-gray-200 mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <div className="font-medium text-gray-500">
+                  Chưa có lịch tư vấn nào.
+                </div>
               </div>
             )}
           </div>

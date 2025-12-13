@@ -80,7 +80,20 @@ const HealthConsultationScheduleDetailPage = () => {
 
   if (!data) return null
 
-  const { doctor, beneficiary, registrant, price, status, registeredAt, scheduledDate, slot, doctorNote, paymentMethod, paymentStatus } = data
+  const { 
+    doctor, 
+    beneficiary, 
+    registrant, 
+    price, 
+    status, 
+    registeredAt, 
+    scheduledDate, 
+    slot, 
+    doctorNote, 
+    paymentMethod, 
+    paymentStatus,
+    consultationSummary 
+  } = data
 
   const statusInfo = getStatusDisplay(status)
   const statusColorClasses = {
@@ -276,13 +289,81 @@ const HealthConsultationScheduleDetailPage = () => {
             </div>
           </div>
 
-          {/* Ghi chú từ bác sĩ */}
+          {/* Thông tin tư vấn chi tiết */}
           {doctorNote && (
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Ghi chú từ bác sĩ</h2>
-              <div className="border border-blue-200 rounded-lg p-6 bg-blue-50">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{doctorNote}</p>
+            <div className="mb-8 p-6 bg-slate-50 rounded-lg border border-slate-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Thông tin tư vấn chi tiết</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {consultationSummary?.mainDisease && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Nhận xét tổng quan</p>
+                    <p className="text-lg font-semibold text-gray-900">{consultationSummary.mainDisease}</p>
+                  </div>
+                )}
+                {consultationSummary?.medications && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Lời khuyên</p>
+                    <p className="text-lg font-semibold text-gray-900 whitespace-pre-wrap">{consultationSummary.medications}</p>
+                  </div>
+                )}
+                {consultationSummary?.systolic && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Huyết áp Tâm thu</p>
+                    <p className="text-lg font-semibold text-gray-900">{consultationSummary.systolic} mmHg</p>
+                  </div>
+                )}
+                {consultationSummary?.diastolic && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Huyết áp Tâm trương</p>
+                    <p className="text-lg font-semibold text-gray-900">{consultationSummary.diastolic} mmHg</p>
+                  </div>
+                )}
+                {consultationSummary?.pulse && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Nhịp tim</p>
+                    <p className="text-lg font-semibold text-gray-900">{consultationSummary.pulse} bpm</p>
+                  </div>
+                )}
+                {consultationSummary?.weight && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Cân nặng</p>
+                    <p className="text-lg font-semibold text-gray-900">{consultationSummary.weight} kg</p>
+                  </div>
+                )}
+                {consultationSummary?.bloodSugar && (
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Đường huyết</p>
+                    <p className="text-lg font-semibold text-gray-900">{consultationSummary.bloodSugar} Mmol/l</p>
+                  </div>
+                )}
               </div>
+              
+              {/* ADLs (Activities of Daily Living) */}
+              {(consultationSummary?.mobility || consultationSummary?.bathing || consultationSummary?.feeding) && (
+                <div className="mt-6 pt-6 border-t border-slate-300">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Khả năng sinh hoạt hàng ngày</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {consultationSummary?.mobility && (
+                      <div>
+                        <p className="text-sm text-slate-600 font-medium">Độc lập di chuyển</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{consultationSummary.mobility}</p>
+                      </div>
+                    )}
+                    {consultationSummary?.bathing && (
+                      <div>
+                        <p className="text-sm text-slate-600 font-medium">Tắm rửa</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{consultationSummary.bathing}</p>
+                      </div>
+                    )}
+                    {consultationSummary?.feeding && (
+                      <div>
+                        <p className="text-sm text-slate-600 font-medium">Ăn uống</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{consultationSummary.feeding}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

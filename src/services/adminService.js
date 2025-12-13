@@ -27,6 +27,14 @@ export const getRegisteredPackageById = async (id) => {
   });
   return data;
 };
+
+// Admin: Lấy danh sách lịch tư vấn của một người cao tuổi
+export const getConsultationSchedulesByBeneficiary = async (beneficiaryId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/consultation-schedules/beneficiary/${beneficiaryId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
 // Admin: Tạo tài khoản supporter mới
 export const createSupporter = async (payload) => {
   // expected payload: { fullName, phoneNumber, gender, password, email? }
@@ -308,6 +316,7 @@ const adminService = {
   getNearbyDoctors,
   assignDoctorToRegistration,
   getRegisteredPackageById,
+  getConsultationSchedulesByBeneficiary,
 };
 
 export default adminService;

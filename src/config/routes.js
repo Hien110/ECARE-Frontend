@@ -30,6 +30,7 @@ const AdminSupporterServiceDetail = React.lazy(() => import("../pages/Admin/Admi
 
 const AdminSupporterSchedulingListPage = React.lazy(() => import("../pages/Admin/SupporterSchedulingList"));
 const AdminSupporterSchedulingDetailPage = React.lazy(() => import("../pages/Admin/SupporterSchedulingDetailPage"));
+const AdminConsultationPricePage = React.lazy(() => import("../pages/Admin/AdminConsultationPricePage"));
 const AppRoutes = [
 
     // Auth routes
@@ -58,6 +59,7 @@ const AppRoutes = [
 
     { path: ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_LIST, page: AdminSupporterSchedulingListPage, layout: AdminLayout },
     { path: ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL, page: AdminSupporterSchedulingDetailPage, layout: AdminLayout },
+    { path: ROUTE_PATH.ADMIN_CONSULTATION_PRICE, page: AdminConsultationPricePage, layout: AdminLayout },
 ];
 
 export default AppRoutes;

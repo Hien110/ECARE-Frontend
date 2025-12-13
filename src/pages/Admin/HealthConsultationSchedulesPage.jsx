@@ -53,7 +53,7 @@ const HealthConsultationSchedulesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen p-6">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-2">Danh sách đặt lịch tư vấn sức khỏe</h1>
         <p className="text-slate-600">Quản lý và theo dõi các lịch tư vấn sức khỏe đã đặt</p>
@@ -86,7 +86,7 @@ const HealthConsultationSchedulesPage = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold">Bác sĩ</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Người cao tuổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Người đăng ký</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày lịch</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Ngày khám</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Buổi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Giá</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Trạng thái</th>

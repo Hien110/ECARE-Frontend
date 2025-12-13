@@ -13,7 +13,7 @@ const SupporterSchedulingList = () => {
     total: 0,
   });
 
-const navigate = useNavigate();  // Hook dùng để điều hướng
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -73,10 +73,9 @@ const navigate = useNavigate();  // Hook dùng để điều hướng
     return `${start} - ${end}`;
   };
 
-const handleRowClick = (id) => {
-  // Khi nhấn vào một hàng, sẽ chuyển đến trang chi tiết của lịch
-  navigate(`${ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL.replace(":id", id)}`); // Thay history.push bằng navigate
-};
+  const handleRowClick = (id) => {
+    navigate(`${ROUTE_PATH.ADMIN_SUPPORTER_SCHEDULING_DETAIL.replace(":id", id)}`);
+  };
 
   const handlePageChange = (newPage) => {
     setPagination((prev) => ({
@@ -85,116 +84,128 @@ const handleRowClick = (id) => {
     }));
   };
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        Lịch Hỗ Trợ Viên
-      </h1>
+  const getStatusBadgeColor = (status) => {
+    const colors = {
+      pending: "bg-yellow-100 text-yellow-800",
+      confirmed: "bg-blue-100 text-blue-800",
+      in_progress: "bg-purple-100 text-purple-800",
+      completed: "bg-green-100 text-green-800",
+      canceled: "bg-red-100 text-red-800",
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
 
-      {error && (
-        <div className="text-red-500 bg-red-100 border border-red-500 p-4 rounded mb-4">
-          {error}
+  return (
+    <div className="min-h-screen p-6">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Lịch Hỗ Trợ Chăm sóc sức khỏe</h1>
+        <p className="text-slate-600">Quản lý và theo dõi các lịch hỗ trợ của người hỗ trợ viên</p>
+      </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-slate-600 text-lg">Đang tải...</p>
+          </div>
         </div>
       )}
 
-      {loading ? (
-        <div className="text-center">
-          <span className="text-xl">Đang tải dữ liệu...</span>
+      {error && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <p className="text-red-800 font-medium">⚠ Lỗi</p>
+          <p className="text-red-700 text-sm">{error}</p>
         </div>
-      ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-          <table className="min-w-full table-auto">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 text-left border-b">Mã lịch</th>
-                <th className="px-4 py-2 text-left border-b">Người hỗ trợ</th>
-                <th className="px-4 py-2 text-left border-b">Người cao tuổi</th>
-                <th className="px-4 py-2 text-left border-b">Dịch vụ</th>
-                <th className="px-4 py-2 text-left border-b">Thời gian</th>
-                <th className="px-4 py-2 text-left border-b">Trạng thái</th>
-                <th className="px-4 py-2 text-left border-b">Thanh toán</th>
-              </tr>
-            </thead>
-            <tbody>
-              {schedules.length > 0 ? (
-                schedules.map((schedule) => (
-                  <tr
-                    key={schedule._id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => handleRowClick(schedule._id)} // Sự kiện nhấn vào hàng
-                  >
-                    <td className="px-4 py-2 border-b">{schedule._id}</td>
-                    <td className="px-4 py-2 border-b">
-                      {schedule.supporter.fullName}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {schedule.elderly.fullName}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {schedule.service?.name || "Không xác định"}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {formatDateRange(schedule.startDate, schedule.endDate)}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      <span
-                        className={`inline-block px-2 py-1 rounded-md text-sm font-medium ${
-                          schedule.status === "completed"
-                            ? "bg-green-100 text-green-600"
-                            : schedule.status === "canceled"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-yellow-100 text-yellow-600"
-                        }`}
-                      >
-                        {formatStatus(schedule.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {schedule.paymentStatus === "paid" ? (
-                        <span className="text-green-600 font-semibold">
-                          Đã thanh toán
-                        </span>
-                      ) : (
-                        <span className="text-red-600 font-semibold">
-                          Chưa thanh toán
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="text-center py-4 text-gray-600">
-                    Không có dữ liệu
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      )}
 
-          <div className="flex justify-between items-center mt-4">
+      {!loading && !error && (
+        <>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                    <th className="px-6 py-4 text-left text-sm font-semibold">#</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Người hỗ trợ</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Người cao tuổi</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Dịch vụ</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Thời gian</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Trạng thái</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Thanh toán</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {schedules.length > 0 ? (
+                    schedules.map((schedule, idx) => (
+                      <tr
+                        key={schedule._id}
+                        className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
+                        onClick={() => handleRowClick(schedule._id)}
+                        title="Xem chi tiết"
+                      >
+                        <td className="px-6 py-4 text-sm text-slate-700 font-medium">
+                          {(pagination.page - 1) * pagination.limit + idx + 1}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-slate-900">{schedule.supporter.fullName}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-slate-900">{schedule.elderly.fullName}</div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-700">
+                          {schedule.service?.name || "Không xác định"}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-700">
+                          {formatDateRange(schedule.startDate, schedule.endDate)}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(schedule.status)}`}>
+                            {formatStatus(schedule.status)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            schedule.paymentStatus === "paid"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {schedule.paymentStatus === "paid" ? "Đã thanh toán" : "Chưa thanh toán"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-8 text-center text-slate-500">
+                        Không có dữ liệu
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center justify-between bg-white rounded-lg shadow p-6">
             <button
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              Prev
+              ← Trước
             </button>
-            <span className="text-sm text-gray-600">{`Page ${
-              pagination.page
-            } of ${Math.ceil(pagination.total / pagination.limit)}`}</span>
+            <span className="text-slate-700 font-medium">
+              Trang {pagination.page} / {Math.ceil(pagination.total / pagination.limit)}
+            </span>
             <button
               onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={
-                pagination.page >=
-                Math.ceil(pagination.total / pagination.limit)
-              }
-              className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 hover:bg-blue-600"
+              disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              Next
+              Sau →
             </button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
