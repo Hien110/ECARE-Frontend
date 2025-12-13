@@ -96,9 +96,9 @@ const SupporterSchedulingList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen p-6">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-slate-900 mb-2">Lịch Hỗ Trợ Viên</h1>
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Lịch Hỗ Trợ Chăm sóc sức khỏe</h1>
         <p className="text-slate-600">Quản lý và theo dõi các lịch hỗ trợ của người hỗ trợ viên</p>
       </div>
 
