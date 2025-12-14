@@ -152,6 +152,10 @@ const AdminCreateSupporterPage = () => {
       setDetailedAddress("");
       $("#tinh").val("0");
       $("#quan").html('<option value="0">Phường Xã</option>');
+
+      setTimeout(() => {
+        navigate("/admin/staff");
+      }, 2000);
     } catch (err) {
       setMessage(err?.response?.data?.message || "Tạo tài khoản thất bại");
     } finally {
