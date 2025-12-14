@@ -168,7 +168,7 @@ function Header() {
             aria-expanded={isPackagesOpen}
             type="button"
           >
-            <MessagesSquare size={16} /> Dịch vụ hỗ trợ sức khỏe
+            <MessagesSquare size={16} /> Dịch vụ tư vấn sức khỏe
             <ChevronDown size={14} className="ml-1" />
           </button>
 
@@ -176,16 +176,16 @@ function Header() {
           {isPackagesOpen && (
             <div className="absolute left-0 top-full mt-0 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
               <Link
-                to="/admin/health-consultation-schedules"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
-              >
-                Lịch khám đã đặt
-              </Link>
-              <Link
                 to="/admin/consultation-price"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
               >
                 Quản lý giá khám
+              </Link>
+              <Link
+                to="/admin/health-consultation-schedules"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
+              >
+                Lịch khám đã đặt
               </Link>
             </div>
           )}
@@ -208,7 +208,7 @@ function Header() {
             aria-expanded={isSupporterServicesOpen}
             type="button"
           >
-            Dịch vụ hỗ trợ
+            Dịch vụ hỗ trợ sưc khỏe
             <ChevronDown size={14} className="ml-1" />
           </button>
 
