@@ -88,7 +88,7 @@ const DashboardPage = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Hồ sơ doanh thu theo tháng</h3>
-              <p className="text-sm text-gray-500">Thống kê số lượng dịch vụ đã đăng ký và lịch hẹn với cộng tác viên </p>
+              <p className="text-sm text-gray-500">Thống kê số lượng dịch vụ đã đăng ký và lịch hẹn với người hỗ trợ</p>
             </div>
             <div className="flex items-center space-x-2">
               <label htmlFor="month-filter" className="text-sm font-medium text-gray-600">Lọc theo tháng</label>
@@ -171,8 +171,8 @@ const DashboardPage = () => {
                     <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Lịch Hẹn Với Cộng Tác Viên</div>
-                    <div className="text-sm text-gray-500">Thuê và đặt lịch hẹn với cộng tác viên</div>
+                    <div className="font-medium text-gray-900">Lịch Hẹn Với người hỗ trợ</div>
+                    <div className="text-sm text-gray-500">Thuê và đặt lịch hẹn với người hỗ trợ</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -194,7 +194,7 @@ const DashboardPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
-          <div className="text-lg font-semibold text-gray-700 mb-1">Số lượng Family</div>
+          <div className="text-lg font-semibold text-gray-700 mb-1">Số lượng Thành Viên Gia Đình</div>
           <div className="text-3xl font-bold text-blue-600 mb-1">{counts.familyMembers?.toLocaleString() ?? 0}</div>
         </div>
 

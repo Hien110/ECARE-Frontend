@@ -100,7 +100,7 @@ const AdminViewSupporterPage = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Chi tiết người hỗ trợ</h1>
-          <p className="text-gray-600">Thông tin chi tiết về supporter trong hệ thống</p>
+          <p className="text-gray-600">Thông tin chi tiết về người hỗ trợ trong hệ thống</p>
         </div>
 
         {/* Message */}
