@@ -13,6 +13,47 @@ const HealthConsultationSchedulesPage = () => {
   const [page, setPage] = useState(1)
   const [limit] = useState(20)
 
+  const navigate = useNavigate()
+
+  const roleLabel = (role) => {
+    const map = {
+      doctor: "Bác sĩ",
+      elderly: "Người già",
+      family: "Người thân gia đình",
+    }
+    return map[role] || role || ""
+  }
+
+  const formatDate = (date) => {
+    if (!date) return "N/A"
+    return new Date(date).toLocaleDateString("vi-VN")
+  }
+
+  const getStatusBadgeStyle = (status) => {
+    const map = {
+      confirmed: "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200",
+      in_progress: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
+      completed: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
+      cancelled: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
+    }
+    return map[status] || "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200"
+  }
+
+  const getStatusText = (status) => {
+    const map = {
+      confirmed: "Đã xác nhận",
+      in_progress: "Đang thực hiện",
+      completed: "Hoàn thành",
+      cancelled: "Đã hủy",
+    }
+    return map[status] || status
+  }
+
+  const getSlotBadgeStyle = (slot) => {
+    if (slot === "morning") return "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200"
+    return "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-200"
+  }
+
   const fetchSchedules = async () => {
     setLoading(true)
     setError(null)
@@ -33,24 +74,8 @@ const HealthConsultationSchedulesPage = () => {
 
   useEffect(() => {
     fetchSchedules()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit])
-
-  const navigate = useNavigate()
-
-  const getStatusBadgeColor = (status) => {
-    const colors = {
-      confirmed: "bg-blue-100 text-blue-800",
-      in_progress: "bg-purple-100 text-purple-800",
-      completed: "bg-green-100 text-green-800",
-      cancelled: "bg-red-100 text-red-800",
-    }
-    return colors[status] || "bg-gray-100 text-gray-800"
-  }
-
-  const formatDate = (date) => {
-    if (!date) return "N/A"
-    return new Date(date).toLocaleDateString("vi-VN")
-  }
 
   return (
     <div className="min-h-screen p-6">
@@ -61,27 +86,27 @@ const HealthConsultationSchedulesPage = () => {
 
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <div className="text-center bg-white/80 backdrop-blur rounded-2xl shadow-sm ring-1 ring-slate-200 px-10 py-8">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
             <p className="text-slate-600 text-lg">Đang tải...</p>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p className="text-red-800 font-medium">⚠ Lỗi</p>
-          <p className="text-red-700 text-sm">{error}</p>
+        <div className="mb-6 bg-rose-50 border border-rose-200 p-4 rounded-2xl">
+          <p className="text-rose-800 font-semibold">⚠ Lỗi</p>
+          <p className="text-rose-700 text-sm">{error}</p>
         </div>
       )}
 
       {!loading && !error && (
         <>
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                  <tr className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
                     <th className="px-6 py-4 text-left text-sm font-semibold">#</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Bác sĩ</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Người cao tuổi</th>
@@ -93,32 +118,52 @@ const HealthConsultationSchedulesPage = () => {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {items.map((item, idx) => (
                     <tr
                       key={item._id}
-                      className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
+                      className="hover:bg-indigo-50/50 cursor-pointer transition-colors"
                       onClick={() => navigate(`${ROUTE_PATH.ADMIN_HEALTH_CONSULTATION_SCHEDULES}/${item._id}`)}
                       title="Xem chi tiết"
                     >
-                      <td className="px-6 py-4 text-sm text-slate-700 font-medium">{(page - 1) * limit + idx + 1}</td>
-                      
+                      <td className="px-6 py-4 text-sm text-slate-700 font-semibold">
+                        {(page - 1) * limit + idx + 1}
+                      </td>
+
                       {/* Bác sĩ */}
                       <td className="px-6 py-4">
-                        <div className="font-medium text-slate-900">{item.doctor?.fullName || "N/A"}</div>
-                        <div className="text-xs text-slate-500">{item.doctor?.role || ""}</div>
+                        <div className="font-semibold text-slate-900">{item.doctor?.fullName || "N/A"}</div>
+                        <div className="mt-1">
+                          {item.doctor?.role ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200">
+                              {roleLabel(item.doctor.role)}
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
 
                       {/* Người hưởng */}
                       <td className="px-6 py-4">
-                        <div className="font-medium text-slate-900">{item.beneficiary?.fullName || "N/A"}</div>
-                        <div className="text-xs text-slate-500">{item.beneficiary?.role || ""}</div>
+                        <div className="font-semibold text-slate-900">{item.beneficiary?.fullName || "N/A"}</div>
+                        <div className="mt-1">
+                          {item.beneficiary?.role ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200">
+                              {roleLabel(item.beneficiary.role)}
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
 
                       {/* Người đăng ký */}
                       <td className="px-6 py-4">
-                        <div className="font-medium text-slate-900">{item.registrant?.fullName || "N/A"}</div>
-                        <div className="text-xs text-slate-500">{item.registrant?.role || ""}</div>
+                        <div className="font-semibold text-slate-900">{item.registrant?.fullName || "N/A"}</div>
+                        <div className="mt-1">
+                          {item.registrant?.role ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200">
+                              {roleLabel(item.registrant.role)}
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
 
                       {/* Ngày lịch */}
@@ -126,9 +171,9 @@ const HealthConsultationSchedulesPage = () => {
                         {formatDate(item.scheduledDate)}
                       </td>
 
-                      {/* Buổi (morning/afternoon) */}
+                      {/* Buổi */}
                       <td className="px-6 py-4 text-sm text-slate-700">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        <span className={`px-2.5 py-1.5 rounded-full text-xs font-semibold ${getSlotBadgeStyle(item.slot)}`}>
                           {item.slot === "morning" ? "Sáng" : "Chiều"}
                         </span>
                       </td>
@@ -140,35 +185,38 @@ const HealthConsultationSchedulesPage = () => {
 
                       {/* Trạng thái */}
                       <td className="px-6 py-4 text-sm">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
-                          {item.status === "confirmed" && "Đã xác nhận"}
-                          {item.status === "in_progress" && "Đang thực hiện"}
-                          {item.status === "completed" && "Hoàn thành"}
-                          {item.status === "cancelled" && "Đã hủy"}
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusBadgeStyle(item.status)}`}>
+                          {getStatusText(item.status)}
                         </span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+
+              {items.length === 0 && (
+                <div className="p-10 text-center text-slate-600">Chưa có lịch tư vấn nào.</div>
+              )}
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between bg-white rounded-lg shadow p-6">
+          <div className="mt-8 flex items-center justify-between bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6">
             <button
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-medium"
+              className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
             >
               ← Trước
             </button>
-            <span className="text-slate-700 font-medium">
-              Trang {page} / {Math.ceil(total / limit)}
+
+            <span className="text-slate-700 font-semibold">
+              Trang {page} / {Math.max(1, Math.ceil(total / limit))}
             </span>
+
             <button
               disabled={page >= Math.ceil(total / limit)}
               onClick={() => setPage(page + 1)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-medium"
+              className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
             >
               Sau →
             </button>
