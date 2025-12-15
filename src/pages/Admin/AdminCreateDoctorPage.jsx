@@ -432,7 +432,7 @@ const AdminCreateDoctorPage = () => {
             <div className="flex justify-end space-x-4 pt-6">
               <button
                 type="button"
-                onClick={() => navigate("/admin/users")}
+                onClick={() => navigate("/admin/staff")}
                 className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 ← Quay lại
