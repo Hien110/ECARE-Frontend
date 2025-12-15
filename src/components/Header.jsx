@@ -137,7 +137,7 @@ function Header() {
                 to="/admin/user"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white transition"
               >
-                Quản lý người dùng
+                Quản lý Khách Hàng
               </Link>
               <Link
                 to={ROUTE_PATH.ADMIN_ELDERLY_LOCATION}
