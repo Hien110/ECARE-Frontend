@@ -113,6 +113,15 @@ export const getDashboard = async () => {
   });
   return data;
 };
+
+// Admin: Lấy lịch khám bác sĩ và lịch hẹn supporter đã hoàn thành
+export const getCompletedSchedules = async () => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/completed-schedules`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+
 // Admin: Reset mật khẩu user về '1'
 export const resetUserPassword = async (userId) => {
   const { data } = await axios.put(
@@ -297,6 +306,7 @@ const adminService = {
   resetUserPassword,
   getPackagesByDoctor,
   getSupporterSchedulesByStatus,
+  getCompletedSchedules,
   createSupporter,
   createDoctor,
   getSupporterProfile,

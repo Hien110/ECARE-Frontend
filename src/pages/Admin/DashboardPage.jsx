@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import adminService, { getSupporterSchedulesByStatus, getRegisteredPackages } from '../../services/adminService';
+import adminService, { getCompletedSchedules } from '../../services/adminService';
 
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month (1-12)
-  const [registeredPackages, setRegisteredPackages] = useState([]);
+  const [completedConsultations, setCompletedConsultations] = useState([]);
+  const [completedSupporterSchedules, setCompletedSupporterSchedules] = useState([]);
   const [stats, setStats] = useState({
     counts: { totalResidents: 0, familyMembers: 0, activeSupporters: 0, doctors: 0, admins: 0 },
     paymentsByStatus: {},
@@ -41,17 +42,11 @@ const DashboardPage = () => {
           setStats(dashRes.data);
         }
 
-        // Fetch registered packages (doctor consultations)
-        const pkgRes = await getRegisteredPackages({ page: 1, limit: 1000 });
-        if (mounted && pkgRes && pkgRes.success && pkgRes.data) {
-          const items = pkgRes.data.items || [];
-          setRegisteredPackages(items);
-        }
-
-        // Fetch supporter schedules
-        const supporterRes = await getSupporterSchedulesByStatus('completed');
-        if (mounted && supporterRes && supporterRes.success && Array.isArray(supporterRes.data)) {
-          setSupporterSchedulesCount(supporterRes.data.length);
+        // Fetch completed schedules (both doctor consultations and supporter schedules)
+        const schedulesRes = await getCompletedSchedules();
+        if (mounted && schedulesRes && schedulesRes.success) {
+          setCompletedConsultations(schedulesRes.data.completedConsultations || []);
+          setCompletedSupporterSchedules(schedulesRes.data.completedSupporterSchedules || []);
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
@@ -65,9 +60,15 @@ const DashboardPage = () => {
 
   // Update doctor and supporter counts when data changes
   useEffect(() => {
-    const filteredPackages = filterByMonth(registeredPackages, 'registeredAt');
-    setDoctorSchedulesCount(filteredPackages.length);
-  }, [registeredPackages, selectedMonth]);
+    const filteredConsultations = filterByMonth(completedConsultations, 'registeredAt');
+    setDoctorSchedulesCount(filteredConsultations.length);
+  }, [completedConsultations, selectedMonth]);
+
+  // Update supporter schedules count
+  useEffect(() => {
+    const filteredSchedules = filterByMonth(completedSupporterSchedules, 'startDate');
+    setSupporterSchedulesCount(filteredSchedules.length);
+  }, [completedSupporterSchedules, selectedMonth]);
 
   if (loading) return <div className="p-6">Đang tải dashboard...</div>;
 
@@ -87,7 +88,7 @@ const DashboardPage = () => {
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Hồ sơ doanh thu theo tháng</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Hồ sơ đặt lịch</h3>
               <p className="text-sm text-gray-500">Thống kê số lượng dịch vụ đã đăng ký và lịch hẹn với cộng tác viên </p>
             </div>
             <div className="flex items-center space-x-2">
