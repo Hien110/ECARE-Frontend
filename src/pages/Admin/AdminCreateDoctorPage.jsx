@@ -14,7 +14,6 @@ const AdminCreateDoctorPage = () => {
     dateOfBirth: "",
     address: "",
     password: "",
-    confirmPassword: "",
     identityCard: "",
     // Doctor Profile fields
     specialization: "",
@@ -102,8 +101,6 @@ const AdminCreateDoctorPage = () => {
     if (!formData.password) errors.push("Mật khẩu là bắt buộc");
     else if (formData.password.length < 6)
       errors.push("Mật khẩu phải có ít nhất 6 ký tự");
-    if (formData.password !== formData.confirmPassword)
-      errors.push("Mật khẩu xác nhận không khớp");
     if (!formData.address.trim()) errors.push("Địa chỉ đầy đủ là bắt buộc");
     
     // Validate doctor profile fields
@@ -151,7 +148,7 @@ const AdminCreateDoctorPage = () => {
         dateOfBirth: "",
         address: "",
         password: "",
-        confirmPassword: "",
+
         identityCard: "",
         specialization: "",
         experience: "",
@@ -164,7 +161,7 @@ const AdminCreateDoctorPage = () => {
       $("#quan").html('<option value="0">Phường Xã</option>');
 
       // Redirect after 2 seconds
-      setTimeout(() => navigate("/admin/users"), 2000);
+      setTimeout(() => navigate("/admin/staff"), 2000);
     } catch (err) {
       setMessage(
         err?.response?.data?.message || "Đã xảy ra lỗi khi tạo tài khoản bác sĩ"
@@ -362,20 +359,6 @@ const AdminCreateDoctorPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Xác nhận mật khẩu
-                  </label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    placeholder="Nhập lại mật khẩu"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Căn cước công dân
                   </label>
                   <input
@@ -449,7 +432,7 @@ const AdminCreateDoctorPage = () => {
             <div className="flex justify-end space-x-4 pt-6">
               <button
                 type="button"
-                onClick={() => navigate("/admin/users")}
+                onClick={() => navigate("/admin/staff")}
                 className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 ← Quay lại

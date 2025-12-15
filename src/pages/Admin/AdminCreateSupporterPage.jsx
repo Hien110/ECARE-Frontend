@@ -152,6 +152,10 @@ const AdminCreateSupporterPage = () => {
       setDetailedAddress("");
       $("#tinh").val("0");
       $("#quan").html('<option value="0">Phường Xã</option>');
+
+      setTimeout(() => {
+        navigate("/admin/staff");
+      }, 2000);
     } catch (err) {
       setMessage(err?.response?.data?.message || "Tạo tài khoản thất bại");
     } finally {
@@ -168,16 +172,16 @@ const AdminCreateSupporterPage = () => {
             onClick={() => navigate("/admin/supporters/import")}
             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium shadow"
           >
-            Thêm supporter bằng file Excel
+            Thêm người hỗ trợ bằng file Excel
           </button>
         </div>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Tạo tài khoản Supporter
+            Tạo tài khoản Người Hỗ Trợ
           </h1>
           <p className="text-gray-600">
-            Thêm supporter mới vào hệ thống chăm sóc sức khỏe
+            Thêm người hỗ trợ mới vào hệ thống chăm sóc sức khỏe
           </p>
         </div>
 
