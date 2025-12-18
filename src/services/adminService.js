@@ -20,6 +20,14 @@ export const getAcceptRelationshipByFamilyIdAdmin = async (familyId) => {
   });
   return data;
 };
+
+// Admin: Lấy danh sách mối quan hệ đã liên kết (family) theo elderlyId (dành cho admin)
+export const getAcceptRelationshipByElderlyIdAdmin = async (elderlyId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/relationship/accepted-elderly/${elderlyId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};  
 // Admin: Lấy chi tiết 1 đăng ký gói khám
 export const getRegisteredPackageById = async (id) => {
   const { data } = await axios.get(`${ADMIN_API_BASE}/registered-packages/${id}`, {
@@ -223,16 +231,23 @@ export const checkAdminAccess = () => {
     return false;
   }
 };
-// Admin: Lấy danh sách lịch hẹn supporter theo status
-export const getSupporterSchedulesByStatus = async (status) => {
-  const params = status ? { status } : {};
-  const query = new URLSearchParams(params).toString();
-  const url = query ? `${ADMIN_API_BASE}/supporter-schedules?${query}` : `${ADMIN_API_BASE}/supporter-schedules`;
-  const { data } = await axios.get(url, {
+// Admin: Lấy danh sách lịch hẹn supporter theo ID
+export const getSupporterSchedulesById = async (supporterId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/supporter-schedules/${supporterId}`, {
     headers: { ...getAuthHeader() },
   });
   return data;
 };
+
+
+// Lấy danh sách lịch hẹn supporter theo ID người già
+export const getSupporterSchedulesByElderlyId = async (elderlyId) => {
+  const { data } = await axios.get(`${ADMIN_API_BASE}/supporter-schedules/elderly/${elderlyId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+
 export const getPackagesByDoctor = async (doctorId) => {
   const { data } = await axios.get(`${ADMIN_API_BASE}/package/${doctorId}`, {
     headers: { ...getAuthHeader() },
@@ -321,7 +336,7 @@ export const validateSupporterData = (data) => {
 const adminService = {
   resetUserPassword,
   getPackagesByDoctor,
-  getSupporterSchedulesByStatus,
+  getSupporterSchedulesById,
   getCompletedSchedules,
   getAllSupporterSchedules,
   getAllDoctorSchedules,
