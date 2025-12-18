@@ -72,7 +72,7 @@ const AdminFamilyDetailPage = () => {
   /** ===== Early returns ===== */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-6 flex items-center justify-center">
+      <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm ring-1 ring-slate-200 px-10 py-8 text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
           <p className="text-slate-600 text-lg">Đang tải...</p>
@@ -83,7 +83,7 @@ const AdminFamilyDetailPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-6 flex items-center justify-center">
+      <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-rose-700 max-w-xl w-full">
           <p className="font-semibold mb-1">⚠ Có lỗi xảy ra</p>
           <p className="text-sm">{error}</p>
@@ -94,7 +94,7 @@ const AdminFamilyDetailPage = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-6 flex items-center justify-center">
+      <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 px-10 py-8 text-center">
           <p className="text-slate-700 text-lg font-medium">Không có dữ liệu</p>
         </div>
@@ -120,11 +120,11 @@ const AdminFamilyDetailPage = () => {
     : "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200"
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen ">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900">Chi tiết người thân</h1>
+          <h1 className="text-4xl font-bold text-slate-900">Chi tiết người thân gia đình</h1>
           <p className="text-slate-600 mt-2">Quản lý thông tin và liên kết của người thân</p>
         </div>
 

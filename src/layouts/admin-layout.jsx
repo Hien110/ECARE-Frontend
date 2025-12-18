@@ -8,7 +8,7 @@ const AdminLayout = ({ children }) => {
       <Sidebar />
 
       {/* Phần bên phải: chừa đúng chiều rộng sidebar */}
-      <div className="ml-72 min-h-screen flex flex-col">
+      <div className="ml-70 min-h-screen flex flex-col">
         <Header />
 
         {/* Chỉ nội dung cuộn */}
