@@ -99,12 +99,12 @@ const BulkImportSupporterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Thêm Cộng Tác Viên Bằng Excel</h1>
-            <p className="text-gray-600">Tạo nhiều tài khoản supporter cùng lúc từ file Excel</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Thêm Người hỗ trợ Bằng Excel</h1>
+            <p className="text-gray-600">Tạo nhiều tài khoản Người hỗ trợ cùng lúc từ file Excel</p>
           </div>
           <button
             onClick={() => navigate("/admin/supporters/create")}

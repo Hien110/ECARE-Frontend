@@ -46,6 +46,22 @@ const roleLabel = (role) => {
   }
 }
 
+// Label dùng cho 2 nút tab (supporter -> Nhân viên theo yêu cầu)
+const roleTabLabel = (role) => {
+  switch (role) {
+    case "doctor":
+      return "Bác sĩ"
+    case "supporter":
+      return "Người hỗ trợ"
+    case "elderly":
+      return "Người già"
+    case "family":
+      return "Gia đình"
+    default:
+      return roleLabel(role)
+  }
+}
+
 const roleBadgeStyle = (role) => {
   switch (role) {
     case "doctor":
@@ -111,6 +127,34 @@ const IconButton = ({ title, onClick, children, danger = false }) => (
 )
 
 /** =========================
+ * Role Tabs (2 nút bấm)
+ * ========================= */
+
+const RoleTabs = ({ roles = [], value, onChange }) => {
+  if (!roles?.length) return null
+  return (
+    <div className="inline-flex rounded-xl ring-1 ring-slate-200 bg-white p-1 gap-1">
+      {roles.map((r) => {
+        const active = value === r
+        return (
+          <button
+            key={r}
+            type="button"
+            onClick={() => onChange(r)}
+            className={[
+              "px-4 py-2 rounded-lg text-sm font-semibold transition cursor-pointer",
+              active ? "bg-indigo-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100",
+            ].join(" ")}
+          >
+            {roleTabLabel(r)}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** =========================
  * Component
  * ========================= */
 
@@ -125,7 +169,11 @@ const UserListTable = ({
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
+
+  // roleFilter: nếu filterRoles có truyền -> mặc định role đầu tiên (vd doctor trước)
+  // nếu không truyền -> fallback "all" để dùng select như cũ
+  const [roleFilter, setRoleFilter] = useState(filterRoles?.length ? filterRoles[0] : "all")
+
   const [statusFilter, setStatusFilter] = useState("all")
   const [search, setSearch] = useState("")
 
@@ -142,6 +190,12 @@ const UserListTable = ({
     message: "",
     type: "success", // 'success' | 'error'
   })
+
+  // Khi filterRoles thay đổi theo page, set tab mặc định cho đúng
+  useEffect(() => {
+    if (filterRoles?.length) setRoleFilter(filterRoles[0])
+    else setRoleFilter("all")
+  }, [filterRoles])
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -178,7 +232,7 @@ const UserListTable = ({
     return users.filter((u) => {
       const okRole =
         (filterRoles.length === 0 || filterRoles.includes(u.role)) &&
-        (roleFilter === "all" || u.role === roleFilter)
+        (roleFilter === "all" ? true : u.role === roleFilter)
 
       const okStatus =
         statusFilter === "all" ||
@@ -372,7 +426,7 @@ const UserListTable = ({
 
         {/* FILTERS */}
         <div className="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-slate-200 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
             <div className="flex-1">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -388,18 +442,23 @@ const UserListTable = ({
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white min-w-[180px]"
-              >
-                <option value="all">Lọc theo vai trò</option>
-                {roleOptions.includes("elderly") && <option value="elderly">Người già</option>}
-                {roleOptions.includes("family") && <option value="family">Người thân gia đình</option>}
-                {roleOptions.includes("supporter") && <option value="supporter">Người hỗ trợ</option>}
-                {roleOptions.includes("doctor") && <option value="doctor">Bác sĩ</option>}
-              </select>
+            <div className="flex flex-wrap gap-4 items-center">
+              {/* ROLE FILTER: nếu có filterRoles -> dùng 2 nút tab, không dùng select */}
+              {filterRoles.length > 0 ? (
+                <RoleTabs roles={filterRoles} value={roleFilter} onChange={setRoleFilter} />
+              ) : (
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white min-w-[180px]"
+                >
+                  <option value="all">Lọc theo vai trò</option>
+                  {roleOptions.includes("elderly") && <option value="elderly">Người già</option>}
+                  {roleOptions.includes("family") && <option value="family">Người thân gia đình</option>}
+                  {roleOptions.includes("supporter") && <option value="supporter">Người hỗ trợ</option>}
+                  {roleOptions.includes("doctor") && <option value="doctor">Bác sĩ</option>}
+                </select>
+              )}
 
               <select
                 value={statusFilter}
@@ -458,7 +517,9 @@ const UserListTable = ({
                       <td className="px-6 py-4">
                         <div className="font-semibold text-slate-900">{u.fullName || "N/A"}</div>
                         <div className="text-xs text-slate-500 mt-1">
-                          {(u.email && u.email !== "N/A" ? u.email : "Chưa có email") + " • " + (u.phoneNumber && u.phoneNumber !== "N/A" ? u.phoneNumber : "Chưa có SĐT")}
+                          {(u.email && u.email !== "N/A" ? u.email : "Chưa có email") +
+                            " • " +
+                            (u.phoneNumber && u.phoneNumber !== "N/A" ? u.phoneNumber : "Chưa có SĐT")}
                         </div>
                       </td>
 
@@ -485,6 +546,7 @@ const UserListTable = ({
                       <td className="px-6 py-4 text-sm text-slate-800">
                         <span className="line-clamp-2">{u.details}</span>
                       </td>
+
                       <td
                         className="px-6 py-4"
                         onClick={(e) => {

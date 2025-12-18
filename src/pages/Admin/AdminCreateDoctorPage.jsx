@@ -172,7 +172,7 @@ const AdminCreateDoctorPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-6 flex justify-end">
           <button
@@ -185,10 +185,10 @@ const AdminCreateDoctorPage = () => {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Tạo tài khoản Doctor
+            Tạo tài khoản Bác sĩ mới
           </h1>
           <p className="text-gray-600">
-            Thêm doctor mới vào hệ thống chăm sóc sức khỏe
+            Thêm bác sĩ mới vào hệ thống chăm sóc sức khỏe
           </p>
         </div>
 
