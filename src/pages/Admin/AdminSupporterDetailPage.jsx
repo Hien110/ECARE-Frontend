@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import adminService, { getSupporterSchedulesByStatus } from "../../services/adminService";
+import adminService from "../../services/adminService";
 import ROUTE_PATH from "../../constants/routePath";
 
 const AdminViewSupporterPage = () => {
@@ -33,7 +33,9 @@ const AdminViewSupporterPage = () => {
     const fetchSchedules = async () => {
       setScheduleLoading(true);
       try {
-        const res = await getSupporterSchedulesByStatus();
+        const res = await adminService.getSupporterSchedulesById(userId);
+        console.log("Kết quả", res);
+        
         if (res && res.success && Array.isArray(res.data)) {
           const filtered = res.data.filter((item) => {
             const supporterId = item.supporter?._id || item.supporter;

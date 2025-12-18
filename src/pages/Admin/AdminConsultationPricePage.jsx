@@ -127,10 +127,26 @@ const AdminConsultationPricePage = () => {
                 <span className="text-blue-600">& quản lý giá</span>
               </h1>
 
-              <p className="mt-4 text-slate-600 text-lg">
-                Một dịch vụ duy nhất, trình bày như landing page rõ ràng, hiện đại,
-                và dễ quản lý trong hệ thống admin.
-              </p>
+            <div className="mt-4 text-slate-600 text-lg leading-relaxed space-y-3">
+  <p>
+    Trang này cung cấp thông tin chi tiết về <strong>Dịch vụ Khám &amp; Quản lý giá</strong>,
+    bao gồm mô tả dịch vụ, và mức giá đang áp dụng.
+  </p>
+
+  <p>
+    Người dùng có thể theo dõi đầy đủ các thông tin liên quan đến dịch vụ như
+    quy trình khám, ghi chú, điều kiện áp dụng và trạng thái hoạt động hiện tại.
+    Nội dung được trình bày rõ ràng để dễ theo dõi và sử dụng.
+  </p>
+
+  <p>
+    Thông qua hệ thống quản trị, admin có thể cập nhật giá, điều chỉnh trạng thái
+    hoạt động và chỉnh sửa nội dung hiển thị của dịch vụ. Các thay đổi sẽ được
+    áp dụng trực tiếp và đồng bộ trên hệ thống.
+  </p>
+</div>
+
+
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Badge icon={<ShieldCheck size={16} />} text="Bảo mật dữ liệu" />
