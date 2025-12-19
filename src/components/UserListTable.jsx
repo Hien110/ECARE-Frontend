@@ -173,9 +173,12 @@ const UserListTable = ({
   // roleFilter: nếu filterRoles có truyền -> mặc định role đầu tiên (vd doctor trước)
   // nếu không truyền -> fallback "all" để dùng select như cũ
   const [roleFilter, setRoleFilter] = useState(filterRoles?.length ? filterRoles[0] : "all")
-
   const [statusFilter, setStatusFilter] = useState("all")
   const [search, setSearch] = useState("")
+
+  /** PAGINATION */
+  const PAGE_SIZE = 15
+  const [page, setPage] = useState(1)
 
   /** MODAL STATE */
   const [confirmModal, setConfirmModal] = useState({
@@ -234,9 +237,7 @@ const UserListTable = ({
         (filterRoles.length === 0 || filterRoles.includes(u.role)) &&
         (roleFilter === "all" ? true : u.role === roleFilter)
 
-      const okStatus =
-        statusFilter === "all" ||
-        (statusFilter === "active" ? u.isActive : !u.isActive)
+      const okStatus = statusFilter === "all" || (statusFilter === "active" ? u.isActive : !u.isActive)
 
       const q = search.trim().toLowerCase()
       const okSearch =
@@ -250,6 +251,25 @@ const UserListTable = ({
       return okRole && okStatus && okSearch
     })
   }, [users, filterRoles, roleFilter, statusFilter, search])
+
+  // Reset page khi filter/search đổi
+  useEffect(() => {
+    setPage(1)
+  }, [roleFilter, statusFilter, search, filterRoles])
+
+  // Pagination computed
+  const totalItems = filtered.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE))
+
+  const pagedData = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filtered.slice(start, start + PAGE_SIZE)
+  }, [filtered, page])
+
+  // Clamp page nếu totalPages giảm
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
 
   const handleConfirm = async () => {
     const { userId, isActive, type } = confirmModal
@@ -364,9 +384,7 @@ const UserListTable = ({
               {confirmModal.type === "lock" ? (
                 <p className="text-slate-700 mb-6">
                   Bạn có chắc muốn{" "}
-                  <span className="font-semibold text-rose-600">
-                    {confirmModal.isActive ? "KHÓA" : "MỞ KHÓA"}
-                  </span>{" "}
+                  <span className="font-semibold text-rose-600">{confirmModal.isActive ? "KHÓA" : "MỞ KHÓA"}</span>{" "}
                   tài khoản này không?
                 </p>
               ) : (
@@ -476,120 +494,197 @@ const UserListTable = ({
         {/* TABLE */}
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-200">
-            <h3 className="text-lg font-bold text-slate-900">Danh sách người dùng</h3>
+            <h3 className="text-lg font-bold text-slate-900">Danh sách người dùng ({filtered.length})</h3>
             <p className="text-sm text-slate-600 mt-1">Danh sách đầy đủ tất cả người dùng trong hệ thống</p>
           </div>
 
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-slate-500">Không có người dùng phù hợp</div>
           ) : (
-            <div className="overflow-x-auto">
-              {/* min-w giúp table không bị bóp gây xuống dòng lạ */}
-              <table className="w-full min-w-[980px] divide-y divide-slate-100">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
-                      Người dùng
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap w-[170px]">
-                      Vai trò
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap w-[170px]">
-                      Trạng thái
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
-                      Địa chỉ
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap w-[110px]">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody className="bg-white divide-y divide-slate-100">
-                  {filtered.map((u) => (
-                    <tr
-                      key={u.id}
-                      className="hover:bg-indigo-50/50 cursor-pointer transition-colors"
-                      onClick={() => navigate(getDetailLink(u))}
-                      title="Xem chi tiết"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-slate-900">{u.fullName || "N/A"}</div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          {(u.email && u.email !== "N/A" ? u.email : "Chưa có email") +
-                            " • " +
-                            (u.phoneNumber && u.phoneNumber !== "N/A" ? u.phoneNumber : "Chưa có SĐT")}
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-3 py-1.5 text-xs rounded-full font-semibold whitespace-nowrap leading-none ${roleBadgeStyle(
-                            u.role
-                          )}`}
-                        >
-                          {roleLabel(u.role)}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-3 py-1.5 text-xs rounded-full font-semibold whitespace-nowrap leading-none ${activeBadgeStyle(
-                            u.isActive
-                          )}`}
-                        >
-                          {u.isActive ? "Đang hoạt động" : "Đang bị khóa"}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-4 text-sm text-slate-800">
-                        <span className="line-clamp-2">{u.details}</span>
-                      </td>
-
-                      <td
-                        className="px-6 py-4"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <IconButton
-                            title="Đặt lại mật khẩu về '1'"
-                            onClick={() =>
-                              setConfirmModal({
-                                visible: true,
-                                userId: u.id,
-                                isActive: u.isActive,
-                                type: "resetPassword",
-                              })
-                            }
-                          >
-                            <PencilIcon />
-                          </IconButton>
-
-                          <IconButton
-                            title={u.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
-                            danger={u.isActive}
-                            onClick={() =>
-                              setConfirmModal({
-                                visible: true,
-                                userId: u.id,
-                                isActive: u.isActive,
-                                type: "lock",
-                              })
-                            }
-                          >
-                            {u.isActive ? <LockClosedIcon /> : <LockOpenIcon />}
-                          </IconButton>
-                        </div>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                {/* min-w giúp table không bị bóp gây xuống dòng lạ */}
+                <table className="w-full min-w-[980px] divide-y divide-slate-100">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
+                        Người dùng
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap w-[170px]">
+                        Vai trò
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap w-[170px]">
+                        Trạng thái
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
+                        Địa chỉ
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap w-[110px]">
+                        Thao tác
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody className="bg-white divide-y divide-slate-100">
+                    {pagedData.map((u) => (
+                      <tr
+                        key={u.id}
+                        className="hover:bg-indigo-50/50 cursor-pointer transition-colors"
+                        onClick={() => navigate(getDetailLink(u))}
+                        title="Xem chi tiết"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-slate-900">{u.fullName || "N/A"}</div>
+                          <div className="text-xs text-slate-500 mt-1">
+                            {(u.email && u.email !== "N/A" ? u.email : "Chưa có email") +
+                              " • " +
+                              (u.phoneNumber && u.phoneNumber !== "N/A" ? u.phoneNumber : "Chưa có SĐT")}
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center px-3 py-1.5 text-xs rounded-full font-semibold whitespace-nowrap leading-none ${roleBadgeStyle(
+                              u.role
+                            )}`}
+                          >
+                            {roleLabel(u.role)}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center px-3 py-1.5 text-xs rounded-full font-semibold whitespace-nowrap leading-none ${activeBadgeStyle(
+                              u.isActive
+                            )}`}
+                          >
+                            {u.isActive ? "Đang hoạt động" : "Đang bị khóa"}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-sm text-slate-800">
+                          <span className="line-clamp-2">{u.details}</span>
+                        </td>
+
+                        <td
+                          className="px-6 py-4"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <IconButton
+                              title="Đặt lại mật khẩu về '1'"
+                              onClick={() =>
+                                setConfirmModal({
+                                  visible: true,
+                                  userId: u.id,
+                                  isActive: u.isActive,
+                                  type: "resetPassword",
+                                })
+                              }
+                            >
+                              <PencilIcon />
+                            </IconButton>
+
+                            <IconButton
+                              title={u.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+                              danger={u.isActive}
+                              onClick={() =>
+                                setConfirmModal({
+                                  visible: true,
+                                  userId: u.id,
+                                  isActive: u.isActive,
+                                  type: "lock",
+                                })
+                              }
+                            >
+                              {u.isActive ? <LockClosedIcon /> : <LockOpenIcon />}
+                            </IconButton>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* PAGINATION BAR */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-slate-200 bg-white">
+                <div className="text-sm text-slate-600">
+                  Hiển thị{" "}
+                  <span className="font-semibold text-slate-900">
+                    {totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}
+                  </span>{" "}
+                  –{" "}
+                  <span className="font-semibold text-slate-900">{Math.min(page * PAGE_SIZE, totalItems)}</span> trong{" "}
+                  <span className="font-semibold text-slate-900">{totalItems}</span> người dùng
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage(1)}
+                    disabled={page === 1}
+                    className={[
+                      "px-3 py-2 rounded-xl text-sm font-semibold ring-1 ring-inset transition",
+                      page === 1
+                        ? "text-slate-400 ring-slate-200 cursor-not-allowed"
+                        : "text-slate-700 ring-slate-200 hover:bg-slate-50",
+                    ].join(" ")}
+                  >
+                    « Đầu
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className={[
+                      "px-3 py-2 rounded-xl text-sm font-semibold ring-1 ring-inset transition",
+                      page === 1
+                        ? "text-slate-400 ring-slate-200 cursor-not-allowed"
+                        : "text-slate-700 ring-slate-200 hover:bg-slate-50",
+                    ].join(" ")}
+                  >
+                    ‹ Trước
+                  </button>
+
+                  <div className="px-3 py-2 rounded-xl ring-1 ring-slate-200 text-sm font-semibold text-slate-800 bg-slate-50">
+                    Trang {page} / {totalPages}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className={[
+                      "px-3 py-2 rounded-xl text-sm font-semibold ring-1 ring-inset transition",
+                      page === totalPages
+                        ? "text-slate-400 ring-slate-200 cursor-not-allowed"
+                        : "text-slate-700 ring-slate-200 hover:bg-slate-50",
+                    ].join(" ")}
+                  >
+                    Sau ›
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPage(totalPages)}
+                    disabled={page === totalPages}
+                    className={[
+                      "px-3 py-2 rounded-xl text-sm font-semibold ring-1 ring-inset transition",
+                      page === totalPages
+                        ? "text-slate-400 ring-slate-200 cursor-not-allowed"
+                        : "text-slate-700 ring-slate-200 hover:bg-slate-50",
+                    ].join(" ")}
+                  >
+                    Cuối »
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
