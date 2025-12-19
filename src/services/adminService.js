@@ -36,6 +36,16 @@ export const getRegisteredPackageById = async (id) => {
   return data;
 };
 
+// Admin: Cập nhật trạng thái thanh toán cho lịch tư vấn
+export const updateConsultationPaymentStatus = async (id, paymentStatus) => {
+  const { data } = await axios.put(
+    `${ADMIN_API_BASE}/registered-packages/${id}/payment-status`,
+    { paymentStatus },
+    { headers: { ...getAuthHeader() } }
+  );
+  return data;
+};
+
 // Admin: Lấy danh sách lịch tư vấn của một người cao tuổi
 export const getConsultationSchedulesByBeneficiary = async (beneficiaryId) => {
   const { data } = await axios.get(`${ADMIN_API_BASE}/consultation-schedules/beneficiary/${beneficiaryId}`, {

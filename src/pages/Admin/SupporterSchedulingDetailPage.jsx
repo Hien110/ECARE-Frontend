@@ -9,6 +9,11 @@ const SupporterSchedulingDetailPage = () => {
   const [schedulingDetail, setSchedulingDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [refunding, setRefunding] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const { id } = useParams()
 
   const defaultAvatar = "https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
@@ -98,6 +103,27 @@ const SupporterSchedulingDetailPage = () => {
     }
     fetchSchedulingDetail()
   }, [id])
+
+  const handleRefundClick = () => {
+    setShowConfirmModal(true)
+  }
+
+  const handleRefund = async () => {
+    setShowConfirmModal(false)
+    setRefunding(true)
+    const res = await supporterSchedulingService.updatePaymentStatus(id, "refunded")
+    if (res.success) {
+      setSchedulingDetail(prev => ({
+        ...prev,
+        paymentStatus: "refunded"
+      }))
+      setShowSuccessModal(true)
+    } else {
+      setErrorMessage(res.message || "Cập nhật trạng thái thất bại")
+      setShowErrorModal(true)
+    }
+    setRefunding(false)
+  }
 
   if (loading) {
     return (
@@ -379,9 +405,156 @@ const SupporterSchedulingDetailPage = () => {
                 </div>
               </div>
             )}
+
+            {/* Bank Account Info - Show when canceled and paid */}
+            {schedulingDetail.status === "canceled" && schedulingDetail.paymentStatus === "paid" && schedulingDetail.registrant && (
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-md hover:shadow-lg transition-shadow p-6 border border-amber-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <DollarSign className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-lg font-bold text-gray-900">Thông tin hoàn tiền</h3>
+                </div>
+                <div className="bg-white rounded-xl p-4 border border-amber-100">
+                  <p className="text-xs text-amber-700 font-semibold mb-3 uppercase tracking-wide">
+                    Tài khoản nhận hoàn tiền
+                  </p>
+                  <div className="space-y-3 text-sm">
+                    {schedulingDetail.registrant.bankName && (
+                      <div>
+                        <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ngân hàng</p>
+                        <p className="font-semibold text-gray-900">{schedulingDetail.registrant.bankName}</p>
+                      </div>
+                    )}
+                    {schedulingDetail.registrant.bankAccountHolderName && (
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Tên chủ tài khoản</p>
+                        <p className="font-semibold text-gray-900">{schedulingDetail.registrant.bankAccountHolderName}</p>
+                      </div>
+                    )}
+                    {schedulingDetail.registrant.bankAccountNumber && (
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Số tài khoản</p>
+                        <p className="font-mono font-bold text-gray-900 text-base tracking-wider">
+                          {schedulingDetail.registrant.bankAccountNumber}
+                        </p>
+                      </div>
+                    )}
+                    {(!schedulingDetail.registrant.bankName && !schedulingDetail.registrant.bankAccountNumber) && (
+                      <div className="text-center py-2">
+                        <p className="text-gray-500 text-sm italic">Chưa có thông tin tài khoản ngân hàng</p>
+                      </div>
+                    )}
+                  </div>
+                  {schedulingDetail.registrant.bankAccountNumber && (
+                    <div className="mt-4 pt-3 border-t border-amber-100">
+                      <p className="text-xs text-amber-600 italic">
+                        💡 Vui lòng hoàn tiền về tài khoản trên
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {schedulingDetail.paymentStatus === "paid" && (
+                  <div className="mt-4">
+                    <button
+                      onClick={handleRefundClick}
+                      disabled={refunding}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {refunding ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Đang xử lý...
+                        </>
+                      ) : (
+                        <>
+                          <DollarSign className="w-5 h-5" />
+                          Xác nhận đã hoàn tiền
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Confirm Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-200">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Xác nhận hoàn tiền</h3>
+              <p className="text-gray-700 mb-2">Bạn có chắc chắn đã hoàn tiền cho người đặt lịch?</p>
+              <p className="text-sm text-gray-500">Hành động này sẽ cập nhật trạng thái thanh toán thành "Đã hoàn tiền".</p>
+            </div>
+            <div className="px-6 pb-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 font-semibold hover:bg-gray-50 transition"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleRefund}
+                className="px-5 py-2.5 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-green-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">Thành công!</h3>
+              <p className="text-gray-700 text-center">Đã cập nhật trạng thái hoàn tiền thành công</p>
+            </div>
+            <div className="px-6 pb-6 flex justify-center">
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="px-6 py-2.5 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-red-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">Lỗi!</h3>
+              <p className="text-gray-700 text-center">{errorMessage}</p>
+            </div>
+            <div className="px-6 pb-6 flex justify-center">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
