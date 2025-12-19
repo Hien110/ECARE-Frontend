@@ -574,6 +574,7 @@ const UserListTable = ({
                           }}
                         >
                           <div className="flex items-center gap-2">
+                            {u.role === "doctor" && u.role === "supporter" && (
                             <IconButton
                               title="Đặt lại mật khẩu về '1'"
                               onClick={() =>
@@ -587,6 +588,7 @@ const UserListTable = ({
                             >
                               <PencilIcon />
                             </IconButton>
+                            )}
 
                             <IconButton
                               title={u.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}

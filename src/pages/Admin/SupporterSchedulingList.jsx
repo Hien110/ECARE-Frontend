@@ -22,7 +22,6 @@ const SupporterSchedulingList = () => {
 
   const STATUS_TABS = [
     { key: "all", label: "Tất cả" },
-    { key: "pending", label: "Đang chờ" },
     { key: "confirmed", label: "Đã xác nhận" },
     { key: "in_progress", label: "Đang thực hiện" },
     { key: "completed", label: "Hoàn thành" },
@@ -62,7 +61,30 @@ const SupporterSchedulingList = () => {
       }
     };
 
-    fetchSchedules();
+    const fetchAllSchedules = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await supporterSchedulingService.getAllSchedulingsForAdmin({ page: 1, limit: 100000 });
+        if (res.success) {
+          setSchedules(res.data || []);
+          setPagination((prev) => ({ ...prev, total: res.pagination?.total || (res.data || []).length }));
+        } else {
+          setError(res.message || "Lỗi khi tải dữ liệu");
+        }
+      } catch (e) {
+        setError(e?.message || "Lỗi khi tải dữ liệu");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const hasFilter = statusTab !== "all" || search.trim() !== "" || dateSort !== "desc";
+    if (hasFilter) {
+      fetchAllSchedules();
+    } else {
+      fetchSchedules();
+    }
   }, [pagination.page, pagination.limit]);
 
   // đổi filter/search/sort -> quay về trang 1 cho hợp lý (FE filter)
@@ -137,7 +159,12 @@ const SupporterSchedulingList = () => {
 
     // status
     if (statusTab !== "all") {
-      list = list.filter((x) => x.status === statusTab);
+      if (statusTab === "need_refund") {
+        // need refund = canceled appointments that were already paid
+        list = list.filter((x) => x.status === "canceled" && x.paymentStatus === "paid");
+      } else {
+        list = list.filter((x) => x.status === statusTab);
+      }
     }
 
     // search: supporter name / elderly name / service name
@@ -163,6 +190,8 @@ const SupporterSchedulingList = () => {
 
     return list;
   }, [schedules, statusTab, search, dateSort]);
+
+  const isClientFiltering = statusTab !== "all" || search.trim() !== "" || dateSort !== "desc";
 
   const totalPages = Math.max(
     1,
@@ -205,10 +234,10 @@ const SupporterSchedulingList = () => {
             title="Lọc theo trạng thái"
           >
             <option value="all">Tất cả trạng thái</option>
-            <option value="pending">Đang chờ</option>
             <option value="confirmed">Đã xác nhận</option>
             <option value="in_progress">Đang thực hiện</option>
             <option value="completed">Hoàn thành</option>
+            <option value="need_refund">Cần Hoàn tiền</option>
             <option value="canceled">Đã hủy</option>
           </select>
 
@@ -222,6 +251,19 @@ const SupporterSchedulingList = () => {
             <option value="asc">Ngày bắt đầu: Xa nhất → Gần nhất</option>
           </select>
         </div>
+      </div>
+
+      {/* Tổng số kết quả */}
+      <div className="mb-4">
+        {isClientFiltering ? (
+          <div className="text-sm text-slate-600">
+            Hiển thị <span className="font-semibold">{filteredSchedules.length}</span> kết quả
+          </div>
+        ) : (
+          <div className="text-sm text-slate-600">
+            Tổng: <span className="font-semibold">{pagination.total || schedules.length}</span> lịch
+          </div>
+        )}
       </div>
 
       {loading && (
@@ -281,7 +323,7 @@ const SupporterSchedulingList = () => {
                         title="Xem chi tiết"
                       >
                         <td className="px-6 py-4 text-sm text-slate-700 font-semibold">
-                          {(pagination.page - 1) * pagination.limit + idx + 1}
+                          {isClientFiltering ? idx + 1 : (pagination.page - 1) * pagination.limit + idx + 1}
                         </td>
 
                         <td className="px-6 py-4">
@@ -345,27 +387,29 @@ const SupporterSchedulingList = () => {
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6">
-            <button
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
-            >
-              ← Trước
-            </button>
+          {!isClientFiltering && (
+            <div className="mt-8 flex items-center justify-between bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+                className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
+              >
+                ← Trước
+              </button>
 
-            <span className="text-slate-700 font-semibold">
-              Trang {pagination.page} / {totalPages}
-            </span>
+              <span className="text-slate-700 font-semibold">
+                Trang {pagination.page} / {totalPages}
+              </span>
 
-            <button
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page >= totalPages}
-              className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
-            >
-              Sau →
-            </button>
-          </div>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= totalPages}
+                className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
+              >
+                Sau →
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

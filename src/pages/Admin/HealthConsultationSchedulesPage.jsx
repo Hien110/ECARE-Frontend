@@ -53,11 +53,33 @@ const HealthConsultationSchedulesPage = () => {
   const getStatusText = (status) => {
     const map = {
       confirmed: "Đã xác nhận",
-      in_progress: "Đang thực hiện",
+      // in_progress: "Đang thực hiện",
       completed: "Hoàn thành",
       cancelled: "Đã hủy",
     };
     return map[status] || status;
+  };
+
+  const getPaymentBadgeStyle = (paymentStatus) => {
+    const map = {
+      paid: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
+      refund: "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-200",
+      pending: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
+      failed: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
+      unpaid: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
+    };
+    return map[paymentStatus] || "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200";
+  };
+
+  const getPaymentText = (paymentStatus) => {
+    const map = {
+      paid: "Đã thanh toán",
+      refunded: "Đã hoàn tiền",
+      pending: "Chờ thanh toán",
+      failed: "Thanh toán thất bại",
+      unpaid: "Chưa thanh toán",
+    };
+    return map[paymentStatus] || paymentStatus || "N/A";
   };
 
   const getSlotBadgeStyle = (slot) => {
@@ -69,7 +91,6 @@ const HealthConsultationSchedulesPage = () => {
   const STATUS_TABS = [
     { key: "all", label: "Tất cả" },
     { key: "confirmed", label: "Đã xác nhận" },
-    { key: "in_progress", label: "Đang thực hiện" },
     { key: "completed", label: "Hoàn thành" },
   ];
 
@@ -101,13 +122,39 @@ const HealthConsultationSchedulesPage = () => {
     }
   };
 
+  const fetchAllSchedules = async () => {
+    // fetch a large limit to get all records for client-side filtering
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await adminService.getRegisteredPackages({ page: 1, limit: 100000 });
+      if (res.success && res.data) {
+        setItems(res.data.items || []);
+        setTotal(res.data.total || 0);
+      } else {
+        setError(res.message || "Lỗi khi tải dữ liệu");
+      }
+    } catch (err) {
+      setError(err?.message || "Lỗi khi tải dữ liệu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchSchedules();
+    // If any filter/search/sort is active, fetch full dataset so filter applies across all pages.
+    const hasFilter = statusTab !== "all" || search.trim() !== "" || dateSort !== "desc";
+    if (hasFilter) {
+      fetchAllSchedules();
+    } else {
+      fetchSchedules();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit]);
+  }, [page, limit, statusTab, search, dateSort]);
 
   // Khi đổi filter/search/sort → quay về trang 1 cho hợp lý (FE filter)
   useEffect(() => {
+    // when user changes filters, ensure we show first page of filtered results
     setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusTab, search, dateSort]);
@@ -119,7 +166,12 @@ const HealthConsultationSchedulesPage = () => {
 
     // filter by status tab
     if (statusTab !== "all") {
-      list = list.filter((x) => x.status === statusTab);
+      if (statusTab === "need_refund") {
+        // items that were cancelled but already paid -> need refund
+        list = list.filter((x) => x.status === "cancelled" && x.paymentStatus === "paid");
+      } else {
+        list = list.filter((x) => x.status === statusTab);
+      }
     }
 
     // search by names (doctor/beneficiary/registrant)
@@ -144,6 +196,8 @@ const HealthConsultationSchedulesPage = () => {
     return list;
   }, [items, statusTab, search, dateSort]);
 
+  const isClientFiltering = statusTab !== "all" || search.trim() !== "" || dateSort !== "desc";
+
   return (
     <div className="min-h-screen p-6">
       <div className="mb-6">
@@ -153,6 +207,19 @@ const HealthConsultationSchedulesPage = () => {
         <p className="text-slate-600">
           Quản lý và theo dõi các lịch tư vấn sức khỏe đã đặt
         </p>
+      </div>
+
+      {/* Tổng số kết quả */}
+      <div className="mb-4">
+        {isClientFiltering ? (
+          <div className="text-sm text-slate-600">
+            Hiển thị <span className="font-semibold">{filteredItems.length}</span> kết quả
+          </div>
+        ) : (
+          <div className="text-sm text-slate-600">
+            Tổng: <span className="font-semibold">{total}</span> lịch
+          </div>
+        )}
       </div>
 
       {/* FILTER BAR */}
@@ -183,8 +250,8 @@ const HealthConsultationSchedulesPage = () => {
             >
               <option value="all">Tất cả trạng thái</option>
               <option value="confirmed">Đã xác nhận</option>
-              <option value="in_progress">Đang thực hiện</option>
               <option value="completed">Hoàn thành</option>
+              <option value="need_refund">Cần Hoàn tiền</option>
               <option value="cancelled">Đã hủy</option>
             </select>
 
@@ -240,10 +307,10 @@ const HealthConsultationSchedulesPage = () => {
                       Buổi
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Giá
+                      Trạng thái
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Trạng thái
+                      Thanh toán
                     </th>
                   </tr>
                 </thead>
@@ -261,7 +328,7 @@ const HealthConsultationSchedulesPage = () => {
                       title="Xem chi tiết"
                     >
                       <td className="px-6 py-4 text-sm text-slate-700 font-semibold">
-                        {(page - 1) * limit + idx + 1}
+                        {isClientFiltering ? idx + 1 : (page - 1) * limit + idx + 1}
                       </td>
 
                       {/* Bác sĩ */}
@@ -322,11 +389,7 @@ const HealthConsultationSchedulesPage = () => {
                         </span>
                       </td>
 
-                      {/* Giá */}
-                      <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                        {item.price?.toLocaleString("vi-VN") || "N/A"} VND
-                      </td>
-
+                      
                       {/* Trạng thái */}
                       <td className="px-6 py-4 text-sm whitespace-nowrap">
                         <span
@@ -337,6 +400,17 @@ const HealthConsultationSchedulesPage = () => {
                           {getStatusText(item.status)}
                         </span>
                       </td>
+                      {/* Thanh toán */}
+                      <td className="px-6 py-4 text-sm whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${getPaymentBadgeStyle(
+                            item.paymentStatus
+                          )}`}
+                        >
+                          {getPaymentText(item.paymentStatus)}
+                        </span>
+                      </td>
+
                     </tr>
                   ))}
                 </tbody>
@@ -350,27 +424,29 @@ const HealthConsultationSchedulesPage = () => {
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
-            >
-              ← Trước
-            </button>
+          {!isClientFiltering && (
+            <div className="mt-8 flex items-center justify-between bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+                className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
+              >
+                ← Trước
+              </button>
 
-            <span className="text-slate-700 font-semibold">
-              Trang {page} / {Math.max(1, Math.ceil(total / limit))}
-            </span>
+              <span className="text-slate-700 font-semibold">
+                Trang {page} / {Math.max(1, Math.ceil(total / limit))}
+              </span>
 
-            <button
-              disabled={page >= Math.ceil(total / limit)}
-              onClick={() => setPage(page + 1)}
-              className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
-            >
-              Sau →
-            </button>
-          </div>
+              <button
+                disabled={page >= Math.ceil(total / limit)}
+                onClick={() => setPage(page + 1)}
+                className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
+              >
+                Sau →
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
