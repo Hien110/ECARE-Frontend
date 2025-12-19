@@ -58,6 +58,34 @@ const supporterSchedulingService = {
       };
     }
   },
+
+  // Cập nhật trạng thái thanh toán
+  updatePaymentStatus: async (schedulingId, paymentStatus) => {
+    try {
+      const response = await axios.put(
+        `${URL}/${schedulingId}/payment-status`,
+        { paymentStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${userService.getAuthToken()}`,
+          },
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message,
+      };
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Cập nhật trạng thái thanh toán thất bại",
+      };
+    }
+  },
 };
 
 export default supporterSchedulingService;
