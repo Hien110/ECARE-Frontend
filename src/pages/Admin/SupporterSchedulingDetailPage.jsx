@@ -322,6 +322,12 @@ const SupporterSchedulingDetailPage = () => {
                     {new Date(schedulingDetail.endDate).toLocaleDateString("vi-VN")}
                   </p>
                 </div>
+                <div>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Ghi chú</p>
+                  <p className="font-semibold text-gray-900">
+                    {schedulingDetail.note || "Không có"}
+                  </p>
+                </div>
               </div>
             </div>
 

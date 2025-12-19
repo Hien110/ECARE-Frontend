@@ -86,7 +86,6 @@ const AdminDoctorDetailPage = () => {
             <tr className="bg-slate-100">
               <th className="px-3 py-2 text-left">Người cao tuổi</th>
               <th className="px-3 py-2 text-left">Người đăng ký</th>
-              <th className="px-3 py-2 text-left">Ghi chú</th>
               <th className="px-3 py-2 text-left">Giá</th>
               <th className="px-3 py-2 text-left">Ngày hoàn thành</th>
               <th className="px-3 py-2 text-left">Trạng thái</th>
@@ -110,7 +109,6 @@ const AdminDoctorDetailPage = () => {
                 <td className="px-3 py-2">
                   {consultation.registrant?.fullName || "-"}
                 </td>
-                <td className="px-3 py-2">{consultation.doctorNote || "-"}</td>
                 <td className="px-3 py-2">
                   {consultation.price?.toLocaleString() || "-"} đ
                 </td>

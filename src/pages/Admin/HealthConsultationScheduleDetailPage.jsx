@@ -199,6 +199,7 @@ const HealthConsultationScheduleDetailPage = () => {
     paymentMethod,
     paymentStatus,
     createdAt,
+    note,
   } = data;
 
   console.log("Chi tiết lịch tư vấn:", data);
@@ -310,6 +311,11 @@ const HealthConsultationScheduleDetailPage = () => {
                 value={slot === "morning" ? "Sáng" : "Chiều"}
               />
               <LabelValue label="Ngày đăng ký" value={formatDate(createdAt)} />
+              {/* Ghi chú */}
+              <LabelValue
+                label="Ghi chú"
+                value={data?.note || "Không có"}
+              />
             </SmallInfoCard>
 
             <SmallInfoCard
