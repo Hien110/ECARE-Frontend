@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import supporterSchedulingService from "../../services/supporterSchedulingService"
+import { getRatingSupportServiceById } from "../../services/adminService"
 import { useParams } from "react-router-dom"
 import { Clock, DollarSign, AlertCircle } from "lucide-react"
 
@@ -14,6 +15,8 @@ const SupporterSchedulingDetailPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  const [rating, setRating] = useState(null)
+  const [loadingRating, setLoadingRating] = useState(false)
   const { id } = useParams()
 
   const defaultAvatar = "https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
@@ -95,12 +98,33 @@ const SupporterSchedulingDetailPage = () => {
         setSchedulingDetail(res.data)
         console.log(res.data);
         
+        // Nếu lịch hỗ trợ đã hoàn thành, lấy đánh giá
+        if (res.data?.status === 'completed') {
+          fetchRating()
+        }
+        
         setError(null)
       } else {
         setError(res.message)
       }
       setLoading(false)
     }
+    
+    const fetchRating = async () => {
+      setLoadingRating(true)
+      try {
+        const res = await getRatingSupportServiceById(id)
+        if (res?.success) {
+          setRating(res.data)
+        }
+      } catch (err) {
+        // Không có đánh giá hoặc lỗi thì bỏ qua
+        console.log("Chưa có đánh giá cho lịch hỗ trợ này")
+      } finally {
+        setLoadingRating(false)
+      }
+    }
+    
     fetchSchedulingDetail()
   }, [id])
 
@@ -477,6 +501,117 @@ const SupporterSchedulingDetailPage = () => {
             )}
           </div>
         </div>
+
+        {/* ===== ĐÁNH GIÁ ===== */}
+        {schedulingDetail.status === 'completed' && (
+          <div className="mt-10 bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-8 border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">⭐</span>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Đánh giá dịch vụ
+              </h2>
+            </div>
+
+            {loadingRating ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                <span className="ml-3 text-gray-600">Đang tải đánh giá...</span>
+              </div>
+            ) : rating ? (
+              <div className="space-y-6">
+                {/* Thông tin người đánh giá */}
+                <div className="flex items-start gap-4">
+                  <img
+                    src={rating.reviewer?.avatar || defaultAvatar}
+                    alt={rating.reviewer?.fullName}
+                    className="w-16 h-16 rounded-full object-cover border-4 border-teal-100"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = defaultAvatar;
+                    }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {rating.reviewer?.fullName || "Người dùng"}
+                      </h3>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, index) => (
+                          <svg
+                            key={index}
+                            className={`w-5 h-5 ${
+                              index < rating.rating
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300 fill-current"
+                            }`}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                        <span className="ml-2 text-lg font-bold text-gray-900">
+                          {rating.rating}/5
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {rating.reviewer?.email || ""}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Đánh giá vào: {rating.ratedAt ? new Date(rating.ratedAt).toLocaleDateString("vi-VN") : "N/A"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Bình luận */}
+                {rating.comment && (
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                      Nhận xét:
+                    </p>
+                    <p className="text-gray-900 whitespace-pre-wrap">
+                      {rating.comment}
+                    </p>
+                  </div>
+                )}
+
+                {/* Người hỗ trợ được đánh giá */}
+                {rating.reviewee && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-2">Người hỗ trợ được đánh giá:</p>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={rating.reviewee?.avatar || defaultAvatar}
+                        alt={rating.reviewee?.fullName}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-100"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = defaultAvatar;
+                        }}
+                      />
+                      <span className="font-semibold text-gray-900">
+                        {rating.reviewee?.fullName || "Không rõ"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                  <span className="text-3xl">📝</span>
+                </div>
+                <p className="text-gray-600 text-lg">
+                  Chưa có đánh giá cho lịch hỗ trợ này
+                </p>
+                <p className="text-gray-500 text-sm mt-2">
+                  Người đăng ký có thể đánh giá sau khi hoàn thành dịch vụ
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Confirm Modal */}

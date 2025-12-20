@@ -372,4 +372,20 @@ const adminService = {
   getConsultationSchedulesByBeneficiary,
 };
 
+// Lấy đánh giá theo lịch khám tư vấn
+export const getRatingByConsultationId = async (consultationId) => {
+  const { data } = await axios.get(`${API_BASE_URL}/api/ratings/consultation/${consultationId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+
+// Lấy đánh giá theo lịch hỗ trợ
+export const getRatingSupportServiceById = async (serviceSupportId) => {
+  const { data } = await axios.get(`${API_BASE_URL}/api/ratings/support-service/${serviceSupportId}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return data;
+};
+
 export default adminService;
