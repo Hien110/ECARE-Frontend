@@ -1,9 +1,22 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import adminService from "../../services/adminService"
 
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true)
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1) // 1-12
+
+  // ✅ New: month/year filter
+  const now = useMemo(() => new Date(), [])
+  const currentYear = now.getFullYear()
+
+  // 0 = all
+  const [selectedMonth, setSelectedMonth] = useState(0)
+  const [selectedYear, setSelectedYear] = useState(currentYear)
+
+  const yearOptions = useMemo(() => {
+    // From (currentYear - 4) -> (currentYear + 1)
+    return Array.from({ length: 6 }, (_, i) => currentYear - 4 + i)
+  }, [currentYear])
+
   const [doctorBookings, setDoctorBookings] = useState([])
   const [supporterBookings, setSupporterBookings] = useState([])
   const [stats, setStats] = useState({
@@ -23,23 +36,50 @@ const DashboardPage = () => {
   const [supporterInProgressCount, setSupporterInProgressCount] = useState(0)
   const [supporterConfirmedCount, setSupporterConfirmedCount] = useState(0)
 
-  // Filter data by selected month
-  const filterByMonth = useCallback(
+
+   const filterLabel = useMemo(() => {
+    const m = Number(selectedMonth || 0)
+    const y = Number(selectedYear || 0)
+
+    if (m === 0 && y === 0) return "Số liệu: tất cả thời gian"
+    if (m === 0 && y !== 0) return `Số liệu: năm ${y}`
+    if (m !== 0 && y === 0) return `Số liệu: tháng ${m} (tất cả năm)`
+    return `Số liệu: tháng ${m}/${y}`
+  }, [selectedMonth, selectedYear])
+  // ✅ New: filter by month + year (or only year / only month / all)
+  const filterByMonthYear = useCallback(
     (items, dateField) => {
       if (!items || !Array.isArray(items)) return []
-      if (!selectedMonth || selectedMonth === 0) return items
 
-      const currentYear = new Date().getFullYear()
+      const m = Number(selectedMonth || 0) // 0 = all month
+      const y = Number(selectedYear || 0) // 0 = all year
+
+      if (m === 0 && y === 0) return items
+
       return items.filter((item) => {
         if (!item) return false
-        const dateValue = item[dateField]
+        const dateValue = item?.[dateField]
         if (!dateValue) return false
-        const date = new Date(dateValue)
-        if (isNaN(date.getTime())) return false
-        return date.getMonth() + 1 === selectedMonth && date.getFullYear() === currentYear
+
+        const d = new Date(dateValue)
+        if (isNaN(d.getTime())) return false
+
+        const okYear = y === 0 ? true : d.getFullYear() === y
+        const okMonth = m === 0 ? true : d.getMonth() + 1 === m
+        return okYear && okMonth
       })
     },
-    [selectedMonth]
+    [selectedMonth, selectedYear]
+  )
+
+  // ✅ UX: if user picks a month while year = "All", auto set to current year
+  const onChangeMonth = useCallback(
+    (value) => {
+      const m = parseInt(value)
+      setSelectedMonth(m)
+      if (m !== 0 && Number(selectedYear) === 0) setSelectedYear(currentYear)
+    },
+    [selectedYear, currentYear]
   )
 
   // Fetch all data on mount
@@ -69,10 +109,10 @@ const DashboardPage = () => {
     }
   }, [])
 
-  // Update counters when schedules/month changes
+  // Update counters when schedules/month/year changes
   useEffect(() => {
-    const filteredDoctorBookings = filterByMonth(doctorBookings, "scheduledDate")
-    const filteredSupporterBookings = filterByMonth(supporterBookings, "startDate")
+    const filteredDoctorBookings = filterByMonthYear(doctorBookings, "scheduledDate")
+    const filteredSupporterBookings = filterByMonthYear(supporterBookings, "startDate")
 
     // Doctor
     const doctorCompleted = filteredDoctorBookings.filter((b) => b?.status === "completed").length
@@ -94,11 +134,13 @@ const DashboardPage = () => {
     setSupporterInProgressCount(supporterInProgress)
     setSupporterConfirmedCount(supporterConfirmed)
     setSupporterTotalBookedCount(supporterBookedTotal)
-  }, [doctorBookings, supporterBookings, filterByMonth])
+  }, [doctorBookings, supporterBookings, filterByMonthYear])
 
   if (loading) return <div className="p-6">Đang tải dashboard...</div>
 
   const { counts } = stats
+
+ 
 
   return (
     <div className="min-h-screen bg-white">
@@ -110,24 +152,59 @@ const DashboardPage = () => {
             <p className="text-slate-600 mt-1">Chào mừng quay trở lại, Quản trị viên. Đây là trang thống kê khám bệnh.</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label htmlFor="month-filter" className="text-sm font-semibold text-slate-600 whitespace-nowrap">
-              Lọc theo tháng
-            </label>
-            <select
-              id="month-filter"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900
-                         focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
+          {/* ✅ Improved filters: month + year + all */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label htmlFor="month-filter" className="text-sm font-semibold text-slate-600 whitespace-nowrap">
+                Tháng
+              </label>
+              <select
+                id="month-filter"
+                value={selectedMonth}
+                onChange={(e) => onChangeMonth(e.target.value)}
+                className="px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900
+                           focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
+              >
+                <option value={0}>Tất cả</option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    Tháng {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label htmlFor="year-filter" className="text-sm font-semibold text-slate-600 whitespace-nowrap">
+                Năm
+              </label>
+              <select
+                id="year-filter"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900
+                           focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
+              >
+                <option value={0}>Tất cả</option>
+                {yearOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMonth(0)
+                setSelectedYear(0)
+              }}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold
+                         hover:bg-slate-50 active:scale-[0.99]"
             >
-              <option value={0}>Tất cả</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
-                <option key={m} value={m}>
-                  Tháng {m}
-                </option>
-              ))}
-            </select>
+              Tất cả
+            </button>
           </div>
         </div>
 
@@ -137,7 +214,7 @@ const DashboardPage = () => {
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900">Hồ sơ đặt lịch</h3>
-              <p className="text-sm text-slate-600 mt-1">Thống kê lịch hẹn tư vấn và hỗ trợ chăm sóc sức khỏe theo tháng</p>
+              <p className="text-sm text-slate-600 mt-1">Thống kê lịch hẹn tư vấn và hỗ trợ chăm sóc sức khỏe theo thời gian</p>
             </div>
 
             {/* Simple Bar Chart */}
@@ -178,9 +255,7 @@ const DashboardPage = () => {
                       ))}
                     </div>
 
-                    <div className="mt-4 text-center text-sm text-slate-500">
-                      Số liệu {selectedMonth ? `tháng ${selectedMonth}` : "tất cả tháng"} - {new Date().getFullYear()}
-                    </div>
+                    <div className="mt-4 text-center text-sm text-slate-500">{filterLabel}</div>
                   </>
                 )
               })()}
@@ -308,6 +383,18 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Optional: Revenue cards (if you want to show) */}
+        {/* <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="text-sm font-semibold text-slate-600">Tổng doanh thu</div>
+            <div className="text-3xl font-extrabold text-slate-900 mt-1">{(stats.totalRevenue ?? 0).toLocaleString()}</div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="text-sm font-semibold text-slate-600">Doanh thu theo tháng</div>
+            <div className="text-3xl font-extrabold text-slate-900 mt-1">{(stats.monthlyRevenue ?? 0).toLocaleString()}</div>
+          </div>
+        </div> */}
       </div>
     </div>
   )
